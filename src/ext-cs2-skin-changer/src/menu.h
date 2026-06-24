@@ -15,36 +15,47 @@ static char searchBuffer[128] = "";
 void UpdateSearchInput() {
 }
 
+void CoreStage5Panel(float x, float y, float w, float h, float radius = 12.0f)
+{
+    SC_GUI::DrawFilledRoundedRect(x, y, w, h, radius, Color(255, 10, 18, 13));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, h, radius, SC_GUI::currentTheme.border, 1.0f);
+}
+
+void CoreStage5Header(const std::string& title, const std::string& sub, float x, float y, float w)
+{
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 76, 14.0f, Color(255, 9, 18, 12));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 76, 14.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawFilledRoundedRect(x + 18, y + 21, 34, 34, 9.0f, Color(255, 16, 48, 27));
+    SC_GUI::DrawStrokeRoundedRect(x + 18, y + 21, 34, 34, 9.0f, SC_GUI::currentTheme.accent, 1.0f);
+    SC_GUI::DrawStringA("+", x + 30, y + 25, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(title, x + 66, y + 16, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(sub, x + 66, y + 42, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+}
+
+void CoreStage5Pill(const std::string& text, float x, float y, float w, bool active = false)
+{
+    Color bg = active ? Color(255, 18, 58, 31) : Color(255, 11, 22, 15);
+    Color border = active ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.border;
+    Color txt = active ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.textDim;
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 28, 8.0f, bg);
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 28, 8.0f, border, 1.0f);
+    SC_GUI::DrawStringA(text, x + 14, y + 7, txt, SC_GUI::smallFont, false);
+}
+
+void CoreStage5EmptyState(const std::string& title, const std::string& sub, float x, float y, float w, float h)
+{
+    CoreStage5Panel(x, y, w, h, 14.0f);
+    SC_GUI::DrawStringA(title, x + 26, y + 26, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(sub, x + 26, y + 58, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+}
 void RenderWeaponTab(float x, float y, float w, float h)
 {
-    // Search Box
-    SC_GUI::TextInput("search_wep", searchBuffer, 128, x + 20, y + 20, 300, 35, "Search Skins...");
-    
-    // Scroll State
-    static float scrollY = 0.0f;
-    float contentHeight = 0.0f;
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
 
-    // Viewport
-    float viewX = x;
-    float viewY = y + 70;
-    float viewW = w;
-    float viewH = h - 70;
-
-    // Grid Settings
-    float itemW = 140; float itemH = 160; float pad = 15;
-    int cols = (int)((viewW - 40) / (itemW + pad));
-    if (cols < 1) cols = 1;
-
-    // Handle Input
-    if (SC_GUI::Input.mousePos.x >= viewX && SC_GUI::Input.mousePos.x <= viewX + viewW &&
-        SC_GUI::Input.mousePos.y >= viewY && SC_GUI::Input.mousePos.y <= viewY + viewH) {
-         scrollY += SC_GUI::Input.scrollDelta * 0.5f; // Scale speed
-    }
-
-    // Prepare content
     std::vector<SkinInfo_t> availableSkins = skindb->GetWeaponSkins(CurrentWeaponDef);
-    
-    // SORT BY RARITY (Descending)
     std::sort(availableSkins.begin(), availableSkins.end(), [](const SkinInfo_t& a, const SkinInfo_t& b) {
         return a.rarity > b.rarity;
     });
@@ -52,79 +63,105 @@ void RenderWeaponTab(float x, float y, float w, float h)
     std::string query = searchBuffer;
     std::transform(query.begin(), query.end(), query.begin(), ::tolower);
 
-    // Filter First to get total count
     std::vector<int> filteredIndices;
     for (int i = 0; i < (int)availableSkins.size(); i++) {
         if (!query.empty()) {
-             std::string name = availableSkins[i].name;
-             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-             if (name.find(query) == std::string::npos) continue;
+            std::string name = availableSkins[i].name;
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+            if (name.find(query) == std::string::npos) continue;
         }
         filteredIndices.push_back(i);
     }
-    
-    // Calculate Content Height
-    int rows = ((int)filteredIndices.size() + cols - 1) / cols;
-    contentHeight = rows * (itemH + pad);
 
-    // Clamp Scroll
-    float maxScroll = 0.0f;
-    float minScroll = -(contentHeight - viewH + pad);
+    CoreStage5Header("Weapons", "Search and select premium weapon finishes.", headerX, headerY, headerW);
+    SC_GUI::TextInput("search_wep", searchBuffer, 128, headerX + headerW - 330, headerY + 20, 300, 36, "Search skins...");
+
+    float pillY = headerY + 92.0f;
+    CoreStage5Pill("Loaded: " + std::to_string((int)availableSkins.size()), headerX, pillY, 120, true);
+    CoreStage5Pill("Filtered: " + std::to_string((int)filteredIndices.size()), headerX + 130, pillY, 130, false);
+    CoreStage5Pill("Sorted by rarity", headerX + 270, pillY, 140, false);
+
+    static float scrollY = 0.0f;
+    float viewX = x + pad;
+    float viewY = headerY + 132.0f;
+    float viewW = w - pad * 2;
+    float viewH = h - (viewY - y) - 20.0f;
+
+    float itemW = 154.0f;
+    float itemH = 180.0f;
+    float gap = 16.0f;
+    int cols = (int)((viewW - 8.0f) / (itemW + gap));
+    if (cols < 1) cols = 1;
+
+    int rows = ((int)filteredIndices.size() + cols - 1) / cols;
+    float contentHeight = rows * (itemH + gap);
+
+    if (SC_GUI::Input.mousePos.x >= viewX && SC_GUI::Input.mousePos.x <= viewX + viewW &&
+        SC_GUI::Input.mousePos.y >= viewY && SC_GUI::Input.mousePos.y <= viewY + viewH) {
+        scrollY += SC_GUI::Input.scrollDelta * 0.5f;
+    }
+
+    float minScroll = -(contentHeight - viewH + gap);
     if (minScroll > 0) minScroll = 0;
-    if (scrollY > maxScroll) scrollY = maxScroll;
+    if (scrollY > 0) scrollY = 0;
     if (scrollY < minScroll) scrollY = minScroll;
 
-    // Determine currently selected skin index
-    int selectedSkinIndex = 0;
+    int selectedLocalSkinIndex = 0;
     SkinInfo_t currentSkin = skinManager->GetSkin(CurrentWeaponDef);
     if (currentSkin.weaponType != WeaponsEnum::none) {
         for (int i = 0; i < (int)availableSkins.size(); i++) {
             if (availableSkins[i].Paint == currentSkin.Paint) {
-                selectedSkinIndex = i;
+                selectedLocalSkinIndex = i;
                 break;
             }
         }
     }
 
-    // Draw With Clip
-    SC_GUI::SetClip(viewX, viewY, viewW, viewH);
+    if (filteredIndices.empty()) {
+        CoreStage5EmptyState("No weapon skins found", "Try a different search term or clear the search box.", viewX, viewY, viewW, 150);
+        return;
+    }
 
+    SC_GUI::SetClip(viewX, viewY, viewW, viewH);
     int displayIdx = 0;
     for (int idx : filteredIndices) {
-        // Calculate Pos
-        float cX = viewX + 20 + (displayIdx % cols) * (itemW + pad);
-        float cY = viewY + scrollY + (displayIdx / cols) * (itemH + pad);
-        
-        // Visibility Check (Culling)
+        float cX = viewX + 4 + (displayIdx % cols) * (itemW + gap);
+        float cY = viewY + scrollY + (displayIdx / cols) * (itemH + gap);
+
         if (cY + itemH < viewY || cY > viewY + viewH) {
-             displayIdx++; continue;
+            displayIdx++;
+            continue;
         }
 
-        bool selected = (selectedSkinIndex == idx);
-        
+        bool selected = (selectedLocalSkinIndex == idx);
         if (SC_GUI::SkinCard("wskin_" + availableSkins[idx].name, availableSkins[idx].name, availableSkins[idx].image_url, availableSkins[idx].rarity, cX, cY, itemW, itemH, selected, configManager->diskCacheEnabled)) {
-            if (idx != 0) skinManager->AddSkin(availableSkins[idx]);
-            else {
-                skinManager->AddSkin(availableSkins[idx]); 
-            }
+            skinManager->AddSkin(availableSkins[idx]);
         }
         displayIdx++;
     }
-
     SC_GUI::ResetClip();
-    
-    // Scrollbar (Visual Only)
+
     if (contentHeight > viewH) {
         float ratio = viewH / contentHeight;
         float barH = viewH * ratio;
         float barY = viewY + (-scrollY / contentHeight) * viewH;
-        SC_GUI::DrawRoundedRect(x + w - 8, barY, 4, barH, 2, Color(255, 100, 100, 100));
+        SC_GUI::DrawFilledRoundedRect(viewX + viewW - 6, barY, 4, barH, 2.0f, SC_GUI::currentTheme.accent);
     }
 }
-
 void RenderKnifeTab(float x, float y, float w, float h)
 {
-     // Smart Auto-Detect Logic
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
+
+    CoreStage5Header("Knives", "Choose a knife model, then select a finish.", headerX, headerY, headerW);
+
+    if (Knifes.empty()) {
+        CoreStage5EmptyState("No knife models found", "Knife data did not load yet.", headerX, headerY + 96, headerW, 150);
+        return;
+    }
+
     bool isDefaultKnife = true;
     int autoDetectedIndex = -1;
     auto it = KnifeNames.find(static_cast<uint16_t>(CurrentWeaponDef));
@@ -132,10 +169,12 @@ void RenderKnifeTab(float x, float y, float w, float h)
         std::string knifeName = it->second;
         for (int i = 0; i < (int)Knifes.size(); i++) {
             if (Knifes[i].name.find(knifeName) != std::string::npos) {
-                autoDetectedIndex = i; break;
+                autoDetectedIndex = i;
+                break;
             }
         }
     }
+
     if (autoDetectedIndex != -1) {
         if (selectedKnifeIndex != autoDetectedIndex) {
             selectedKnifeIndex = autoDetectedIndex;
@@ -144,381 +183,429 @@ void RenderKnifeTab(float x, float y, float w, float h)
         isDefaultKnife = false;
     }
 
-    float curY = y + 20;
+    if (selectedKnifeIndex < 0) selectedKnifeIndex = 0;
+    if (selectedKnifeIndex >= (int)Knifes.size()) selectedKnifeIndex = 0;
 
-    // Model Selector (Only if Default)
-    if (isDefaultKnife) {
-        SC_GUI::DrawStringA("Select Knife Type (Scroll to see more):", x + 20, curY, Color::White, SC_GUI::mainFont, false);
-        curY += 25;
-        
-        // Horizontal Scroll for Knives
-        static float kScrollX = 0.0f;
-        SC_GUI::SetClip(x, curY, w, 35);
-        if (SC_GUI::Input.mousePos.y >= curY && SC_GUI::Input.mousePos.y <= curY + 35) {
-             kScrollX += SC_GUI::Input.scrollDelta * 0.5f;
-        }
-        float kContentW = Knifes.size() * 85.0f;
-        if (kScrollX > 0) kScrollX = 0;
-        if (kScrollX < -(kContentW - w)) kScrollX = -(kContentW - w);
-
-        for(int k=0; k<(int)Knifes.size(); k++) {
-             if (SC_GUI::Button("k_model_" + std::to_string(k), Knifes[k].name, x + 20 + kScrollX + (k*85), curY, 80, 25, selectedKnifeIndex == k)) {
-                 selectedKnifeIndex = k;
-                 selectedKnifeSkinIndex = 0;
-             }
-        }
-        SC_GUI::ResetClip();
-        curY += 40;
-    } else {
-        SC_GUI::DrawStringA("Detected: " + Knifes[selectedKnifeIndex].name, x + 20, curY, Color(255, 100, 255, 100), SC_GUI::titleFont, false);
-        curY += 40;
-    }
-
-    // Grid (Scrollable)
-    std::string FilterName = Knifes[selectedKnifeIndex].name;
+    std::string filterName = Knifes[selectedKnifeIndex].name;
     const std::vector<SkinInfo_t>& allKnifeSkins = skindb->GetKnifeSkins();
     std::vector<SkinInfo_t> filteredSkins;
-    filteredSkins.push_back(SkinInfo_t{ 0, false, "Vanilla", WeaponsEnum::none, 1 }); // Default rarity
-    
+    filteredSkins.push_back(SkinInfo_t{ 0, false, "Vanilla", WeaponsEnum::none, 1 });
+
     for (const auto& skin : allKnifeSkins) {
-        if (skin.name.find(FilterName) == std::string::npos) continue;
+        if (skin.name.find(filterName) == std::string::npos) continue;
         filteredSkins.push_back(skin);
     }
-    
-    // Sort Knife Skins
+
     std::sort(filteredSkins.begin(), filteredSkins.end(), [](const SkinInfo_t& a, const SkinInfo_t& b) {
         return a.rarity > b.rarity;
     });
-    
-    // Draw Grid with Scroll
-    static float kSkinScrollY = 0.0f;
-    float viewY = curY;
-    float viewH = (y + h) - viewY;
-    float itemW = 140; float itemH = 160; float pad = 15;
-    int cols = (int)((w - 40) / (itemW + pad));
-    if (cols < 1) cols = 1;
-    
-    // Input for Knife Grid
-    if (SC_GUI::Input.mousePos.y > viewY) {
-         kSkinScrollY += SC_GUI::Input.scrollDelta * 0.5f;
+
+    float contentY = headerY + 96.0f;
+    float leftW = 210.0f;
+    float leftX = headerX;
+    float rightX = leftX + leftW + 18.0f;
+    float rightW = headerW - leftW - 18.0f;
+    float panelH = h - (contentY - y) - 22.0f;
+
+    CoreStage5Panel(leftX, contentY, leftW, panelH, 14.0f);
+    SC_GUI::DrawStringA("Knife Model", leftX + 18, contentY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(isDefaultKnife ? "Manual selection" : "Auto-detected", leftX + 18, contentY + 45, isDefaultKnife ? SC_GUI::currentTheme.textDim : SC_GUI::currentTheme.accent, SC_GUI::smallFont, false);
+
+    static float modelScrollY = 0.0f;
+    float modelListY = contentY + 78.0f;
+    float modelListH = panelH - 94.0f;
+    float modelContentH = (float)Knifes.size() * 42.0f;
+
+    if (SC_GUI::Input.mousePos.x >= leftX && SC_GUI::Input.mousePos.x <= leftX + leftW &&
+        SC_GUI::Input.mousePos.y >= modelListY && SC_GUI::Input.mousePos.y <= modelListY + modelListH) {
+        modelScrollY += SC_GUI::Input.scrollDelta * 0.5f;
     }
-    
+    if (modelScrollY > 0) modelScrollY = 0;
+    float modelMin = -(modelContentH - modelListH);
+    if (modelMin > 0) modelMin = 0;
+    if (modelScrollY < modelMin) modelScrollY = modelMin;
+
+    SC_GUI::SetClip(leftX, modelListY, leftW, modelListH);
+    for (int k = 0; k < (int)Knifes.size(); k++) {
+        float itemY = modelListY + modelScrollY + k * 42.0f;
+        if (itemY + 36 < modelListY || itemY > modelListY + modelListH) continue;
+        if (SC_GUI::TabButton("k_model_" + std::to_string(k), Knifes[k].name, leftX + 12, itemY, leftW - 24, 36, selectedKnifeIndex == k)) {
+            selectedKnifeIndex = k;
+            selectedKnifeSkinIndex = 0;
+        }
+    }
+    SC_GUI::ResetClip();
+
+    CoreStage5Panel(rightX, contentY, rightW, panelH, 14.0f);
+    SC_GUI::DrawStringA(filterName, rightX + 20, contentY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Finishes: " + std::to_string((int)filteredSkins.size()), rightX + 20, contentY + 45, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    static float kSkinScrollY = 0.0f;
+    float viewX = rightX + 18.0f;
+    float viewY = contentY + 78.0f;
+    float viewW = rightW - 36.0f;
+    float viewH = panelH - 96.0f;
+    float itemW = 154.0f;
+    float itemH = 180.0f;
+    float gap = 16.0f;
+    int cols = (int)((viewW - 4.0f) / (itemW + gap));
+    if (cols < 1) cols = 1;
+
     int rows = ((int)filteredSkins.size() + cols - 1) / cols;
-    float contentH = rows * (itemH + pad);
+    float contentH = rows * (itemH + gap);
+
+    if (SC_GUI::Input.mousePos.x >= viewX && SC_GUI::Input.mousePos.x <= viewX + viewW &&
+        SC_GUI::Input.mousePos.y >= viewY && SC_GUI::Input.mousePos.y <= viewY + viewH) {
+        kSkinScrollY += SC_GUI::Input.scrollDelta * 0.5f;
+    }
     if (kSkinScrollY > 0) kSkinScrollY = 0;
-    if (kSkinScrollY < -(contentH - viewH + pad)) kSkinScrollY = -(contentH - viewH + pad);
+    float skinMin = -(contentH - viewH + gap);
+    if (skinMin > 0) skinMin = 0;
+    if (kSkinScrollY < skinMin) kSkinScrollY = skinMin;
 
-    SC_GUI::SetClip(x, viewY, w, viewH);
-    int displayIdx = 0;
+    SC_GUI::SetClip(viewX, viewY, viewW, viewH);
     for (int i = 0; i < (int)filteredSkins.size(); i++) {
-         float cX = x + 20 + (displayIdx % cols) * (itemW + pad);
-         float cY = viewY + kSkinScrollY + (displayIdx / cols) * (itemH + pad);
-         
-         // Cull
-         if (cY + itemH < viewY || cY > viewY + viewH) { displayIdx++; continue; }
+        float cX = viewX + (i % cols) * (itemW + gap);
+        float cY = viewY + kSkinScrollY + (i / cols) * (itemH + gap);
+        if (cY + itemH < viewY || cY > viewY + viewH) continue;
 
-         bool selected = (selectedKnifeSkinIndex == i);
-         if (SC_GUI::SkinCard("kskin_" + filteredSkins[i].name, filteredSkins[i].name, filteredSkins[i].image_url, filteredSkins[i].rarity, cX, cY, itemW, itemH, selected, configManager->diskCacheEnabled)) {
-             selectedKnifeSkinIndex = i;
-             if (i!=0) {
-                 SkinInfo_t s = filteredSkins[i];
-                 s.weaponType = WeaponsEnum::CtKnife; skinManager->AddSkin(s);
-                 s.weaponType = WeaponsEnum::Tknife; skinManager->AddSkin(s);
-             }
-         }
-         displayIdx++;
+        bool selected = (selectedKnifeSkinIndex == i);
+        if (SC_GUI::SkinCard("kskin_" + std::to_string(i) + filteredSkins[i].name, filteredSkins[i].name, filteredSkins[i].image_url, filteredSkins[i].rarity, cX, cY, itemW, itemH, selected, configManager->diskCacheEnabled)) {
+            selectedKnifeSkinIndex = i;
+            if (i != 0) {
+                SkinInfo_t s = filteredSkins[i];
+                s.weaponType = WeaponsEnum::CtKnife;
+                skinManager->AddSkin(s);
+                s.weaponType = WeaponsEnum::Tknife;
+                skinManager->AddSkin(s);
+            }
+        }
     }
     SC_GUI::ResetClip();
 }
-
 void RenderMusicTab(float x, float y, float w, float h)
 {
-    // Search/Filter
-    SC_GUI::TextInput("search_music", searchBuffer, 128, x + 20, y + 20, 300, 35, "Search Music Kits...");
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
+
     std::string query = searchBuffer;
     std::transform(query.begin(), query.end(), query.begin(), ::tolower);
 
     std::vector<int> filteredIndices;
     for (int i = 0; i < (int)musicKits.size(); i++) {
         if (!query.empty()) {
-             std::string name = musicKits[i].name;
-             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-             if (name.find(query) == std::string::npos) continue;
+            std::string name = musicKits[i].name;
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+            if (name.find(query) == std::string::npos) continue;
         }
         filteredIndices.push_back(i);
     }
 
-    // Scroll Logic
+    CoreStage5Header("Music Kits", "Browse and select your active music kit.", headerX, headerY, headerW);
+    SC_GUI::TextInput("search_music", searchBuffer, 128, headerX + headerW - 330, headerY + 20, 300, 36, "Search music kits...");
+
+    float pillY = headerY + 92.0f;
+    CoreStage5Pill("Kits: " + std::to_string((int)musicKits.size()), headerX, pillY, 105, true);
+    CoreStage5Pill("Filtered: " + std::to_string((int)filteredIndices.size()), headerX + 115, pillY, 125, false);
+    CoreStage5Pill("Selected: " + std::to_string(selectedMusicKitIndex), headerX + 250, pillY, 120, false);
+
     static float mScrollY = 0.0f;
-    float itemW = 140; float itemH = 100; float pad = 15;
-    int cols = (int)((w - 40) / (itemW + pad));
+    float viewX = x + pad;
+    float viewY = headerY + 132.0f;
+    float viewW = w - pad * 2;
+    float viewH = h - (viewY - y) - 20.0f;
+    float itemW = 158.0f;
+    float itemH = 132.0f;
+    float gap = 16.0f;
+    int cols = (int)((viewW - 8.0f) / (itemW + gap));
     if (cols < 1) cols = 1;
 
-    // Content Height
     int rows = ((int)filteredIndices.size() + cols - 1) / cols;
-    float contentH = rows * (itemH + pad);
-    float viewY = y + 70;
-    float viewH = h - 70;
+    float contentH = rows * (itemH + gap);
 
-    // Input
-    if (SC_GUI::Input.mousePos.x >= x && SC_GUI::Input.mousePos.x <= x + w &&
+    if (SC_GUI::Input.mousePos.x >= viewX && SC_GUI::Input.mousePos.x <= viewX + viewW &&
         SC_GUI::Input.mousePos.y >= viewY && SC_GUI::Input.mousePos.y <= viewY + viewH) {
-         mScrollY += SC_GUI::Input.scrollDelta * 0.5f;
+        mScrollY += SC_GUI::Input.scrollDelta * 0.5f;
     }
-    
-    // Clamp
     if (mScrollY > 0) mScrollY = 0;
-    if (mScrollY < -(contentH - viewH + pad)) mScrollY = -(contentH - viewH + pad);
+    float minScroll = -(contentH - viewH + gap);
+    if (minScroll > 0) minScroll = 0;
+    if (mScrollY < minScroll) mScrollY = minScroll;
 
-    // Draw
-    SC_GUI::SetClip(x, viewY, w, viewH);
+    if (filteredIndices.empty()) {
+        CoreStage5EmptyState("No music kits found", "Try a different search term or clear the search box.", viewX, viewY, viewW, 150);
+        return;
+    }
+
+    SC_GUI::SetClip(viewX, viewY, viewW, viewH);
     int displayIdx = 0;
     for (int idx : filteredIndices) {
-        float cX = x + 20 + (displayIdx % cols) * (itemW + pad);
-        float cY = viewY + mScrollY + (displayIdx / cols) * (itemH + pad);
-
-        if (cY + itemH < viewY || cY > viewY + viewH) { displayIdx++; continue; }
+        float cX = viewX + 4 + (displayIdx % cols) * (itemW + gap);
+        float cY = viewY + mScrollY + (displayIdx / cols) * (itemH + gap);
+        if (cY + itemH < viewY || cY > viewY + viewH) {
+            displayIdx++;
+            continue;
+        }
 
         bool selected = (selectedMusicKitIndex == idx);
-        // Use Rarity 3 (Rare/Blue) for Music Kits as default
         if (SC_GUI::SkinCard("music_" + std::to_string(idx), musicKits[idx].name, musicKits[idx].image_url, 3, cX, cY, itemW, itemH, selected, configManager->diskCacheEnabled)) {
-             selectedMusicKitIndex = idx;
-             skinManager->MusicKit = musicKits[idx];
-             ForceUpdate = true;
+            selectedMusicKitIndex = idx;
+            skinManager->MusicKit = musicKits[idx];
+            ForceUpdate = true;
         }
         displayIdx++;
     }
     SC_GUI::ResetClip();
-    
-    // Scrollbar
-    if (contentH > viewH) {
-        float ratio = viewH / contentH;
-        float barH = viewH * ratio;
-        float barY = viewY + (-mScrollY / contentH) * viewH;
-        SC_GUI::DrawRoundedRect(x + w - 8, barY, 4, barH, 2, Color(255, 100, 100, 100));
-    }
 }
-
-
-
 void RenderConfigTab(float x, float y, float w, float h)
 {
-    float curY = y + 20;
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
 
-    // Config Input
+    CoreStage5Header("Configs", "Save, load, and manage your local profiles.", headerX, headerY, headerW);
+
     static char cfgNameBuf[64] = "";
-    SC_GUI::TextInput("cfg_name", cfgNameBuf, 64, x + 20, curY, 200, 35, "Config Name");
-    
-    if (SC_GUI::Button("cfg_create_save", "Create / Save", x + 230, curY, 120, 35)) {
+    float createY = headerY + 96.0f;
+    CoreStage5Panel(headerX, createY, headerW, 78, 14.0f);
+    SC_GUI::TextInput("cfg_name", cfgNameBuf, 64, headerX + 18, createY + 21, 260, 36, "New config name");
+
+    if (SC_GUI::Button("cfg_create_save", "Create / Save", headerX + 292, createY + 21, 136, 36)) {
         std::string name = cfgNameBuf;
         if (!name.empty()) {
             configManager->Save(name);
             memset(cfgNameBuf, 0, 64);
         }
     }
-    curY += 50;
-    
-    // Separator
-    SC_GUI::DrawRect(x + 20, curY, w - 40, 1, SC_GUI::currentTheme.separator);
-    curY += 20;
 
-    // List Configs
+    CoreStage5Pill("Stored locally", headerX + headerW - 270, createY + 25, 120, true);
+    CoreStage5Pill("APPDATA path", headerX + headerW - 140, createY + 25, 115, false);
+
     std::vector<std::string> configs = configManager->GetConfigs();
-    
-    // Scrollable Area
-    float listH = h - (curY - y) - 20;
-    
+
+    float listY = createY + 98.0f;
+    float listH = h - (listY - y) - 22.0f;
+    CoreStage5Panel(headerX, listY, headerW, listH, 14.0f);
+    SC_GUI::DrawStringA("Saved Configs", headerX + 20, listY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(std::to_string((int)configs.size()) + " profiles found", headerX + 20, listY + 45, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    if (configs.empty()) {
+        SC_GUI::DrawStringA("No configs yet. Type a name above and press Create / Save.", headerX + 20, listY + 88, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+        return;
+    }
+
     static float scrollY = 0.0f;
-    float contentH = configs.size() * 45.0f;
-    
-    // Input for List
-     if (SC_GUI::Input.mousePos.x >= x && SC_GUI::Input.mousePos.x <= x + w &&
-        SC_GUI::Input.mousePos.y >= curY && SC_GUI::Input.mousePos.y <= curY + listH) {
-         scrollY += SC_GUI::Input.scrollDelta * 0.5f;
+    float rowY = listY + 78.0f;
+    float rowH = listH - 94.0f;
+    float contentH = configs.size() * 56.0f;
+
+    if (SC_GUI::Input.mousePos.x >= headerX && SC_GUI::Input.mousePos.x <= headerX + headerW &&
+        SC_GUI::Input.mousePos.y >= rowY && SC_GUI::Input.mousePos.y <= rowY + rowH) {
+        scrollY += SC_GUI::Input.scrollDelta * 0.5f;
     }
     if (scrollY > 0) scrollY = 0;
-    if (scrollY < -(contentH - listH)) scrollY = -(contentH - listH);
-    if (contentH < listH) scrollY = 0;
+    float minScroll = -(contentH - rowH);
+    if (minScroll > 0) minScroll = 0;
+    if (scrollY < minScroll) scrollY = minScroll;
 
-    SC_GUI::SetClip(x, curY, w, listH);
-    
-    for (int i=0; i<(int)configs.size(); i++) {
-        float itemY = curY + scrollY + (i * 45);
-        if (itemY + 40 < curY || itemY > curY + listH) continue;
+    SC_GUI::SetClip(headerX, rowY, headerW, rowH);
+    for (int i = 0; i < (int)configs.size(); i++) {
+        float itemY = rowY + scrollY + i * 56.0f;
+        if (itemY + 46 < rowY || itemY > rowY + rowH) continue;
 
-        // Background
-        SC_GUI::DrawRoundedRect(x + 20, itemY, w - 240, 35, 6, SC_GUI::currentTheme.contentBg);
-        SC_GUI::DrawStringA(configs[i], x + 35, itemY + 10, SC_GUI::currentTheme.text, SC_GUI::mainFont, false);
+        SC_GUI::DrawFilledRoundedRect(headerX + 18, itemY, headerW - 36, 46, 10.0f, Color(255, 12, 22, 16));
+        SC_GUI::DrawStrokeRoundedRect(headerX + 18, itemY, headerW - 36, 46, 10.0f, SC_GUI::currentTheme.border, 1.0f);
+        SC_GUI::DrawStringA(configs[i], headerX + 36, itemY + 13, SC_GUI::currentTheme.text, SC_GUI::mainFont, false);
 
-        // Buttons
-        if (SC_GUI::Button("cfg_load_" + std::to_string(i), "Load", x + w - 200, itemY, 80, 35)) {
+        if (SC_GUI::Button("cfg_load_" + std::to_string(i), "Load", headerX + headerW - 210, itemY + 6, 82, 34)) {
             configManager->Load(configs[i]);
         }
-        
-        if (SC_GUI::Button("cfg_save_" + std::to_string(i), "Save", x + w - 110, itemY, 80, 35)) {
+
+        if (SC_GUI::Button("cfg_save_" + std::to_string(i), "Save", headerX + headerW - 118, itemY + 6, 82, 34)) {
             configManager->Save(configs[i]);
         }
     }
-    
     SC_GUI::ResetClip();
 }
-
 void RenderSettingsTab(float x, float y, float w, float h)
 {
-    float curY = y + 20;
-    
-    // Configs below
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
 
-    
-    // Transparency
-    SC_GUI::DrawStringA("Menu Transparency", x + 20, curY, Color(255, 255, 255), SC_GUI::mainFont, false);
-    curY += 25;
-    
+    CoreStage5Header("Settings", "Adjust visuals, caching, transparency, and configs.", headerX, headerY, headerW);
+
+    float contentY = headerY + 96.0f;
+    float leftW = (headerW - 18.0f) * 0.45f;
+    float rightW = headerW - leftW - 18.0f;
+    float panelH = h - (contentY - y) - 22.0f;
+
+    CoreStage5Panel(headerX, contentY, leftW, panelH, 14.0f);
+    SC_GUI::DrawStringA("Interface", headerX + 20, contentY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Core green theme controls", headerX + 20, contentY + 45, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    float curY = contentY + 86.0f;
+    SC_GUI::DrawStringA("Menu Transparency", headerX + 20, curY, SC_GUI::currentTheme.text, SC_GUI::mainFont, false);
+    curY += 28.0f;
+
     static float alphaVal = 255.0f;
-    if (SC_GUI::Slider("alpha_slider", &alphaVal, 50.0f, 255.0f, x + 20, curY, 300, 20)) {
+    if (SC_GUI::Slider("alpha_slider", &alphaVal, 50.0f, 255.0f, headerX + 20, curY, leftW - 40, 24)) {
         overlay::GlobalAlpha = (BYTE)alphaVal;
     }
-    curY += 40;
 
-    // Disk Cache
-    if (SC_GUI::Checkbox("disk_cache_check", "Enable Disk Cache", &configManager->diskCacheEnabled, x + 20, curY)) {
+    curY += 54.0f;
+    if (SC_GUI::Checkbox("disk_cache_check", "Enable image disk cache", &configManager->diskCacheEnabled, headerX + 20, curY)) {
         if (!configManager->diskCacheEnabled) {
             SC_GUI::TextureCache.ClearDisk();
         }
     }
-    curY += 40;
 
-    // Themes
-    SC_GUI::DrawStringA("Themes", x + 20, curY, Color(255, 255, 255), SC_GUI::mainFont, false);
-    curY += 25;
+    curY += 60.0f;
+    SC_GUI::DrawStringA("Theme Presets", headerX + 20, curY, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Keep Core Green for the premium look.", headerX + 20, curY + 26, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+    curY += 64.0f;
 
-    if (SC_GUI::Button("theme_darkred", "Core Green (Default)", x + 20, curY, 200, 30)) {
+    if (SC_GUI::Button("theme_core_green", "Core Green", headerX + 20, curY, leftW - 40, 36, true)) {
         SC_GUI::currentTheme = {
-            Color(255, 12, 12, 12),
-            Color(255, 20, 20, 20),
-            Color(255, 30, 30, 30),
-            Color(255, 45, 45, 45),
-            Color(255, 40, 40, 40),
+            Color(255, 8, 12, 8),
+            Color(255, 13, 18, 14),
+            Color(255, 18, 24, 20),
+            Color(255, 34, 50, 38),
+            Color(255, 27, 40, 31),
             Color(255, 92, 255, 122),
-            Color(255, 255, 255, 255),
-            Color(255, 150, 150, 150) 
+            Color(255, 230, 234, 231),
+            Color(255, 160, 166, 163)
         };
     }
-    curY += 35;
 
-    if (SC_GUI::Button("theme_midblue", "Midnight Blue", x + 20, curY, 200, 30)) {
+    curY += 46.0f;
+    if (SC_GUI::Button("theme_midnight", "Midnight Blue", headerX + 20, curY, leftW - 40, 36)) {
         SC_GUI::currentTheme = {
             Color(255, 15, 20, 30),
             Color(255, 20, 25, 40),
             Color(255, 40, 50, 70),
             Color(255, 30, 40, 60),
-            Color(255, 30, 45, 65), // Separator
-            Color(255, 0, 120, 215), // Blue Accent
-            Color(255, 255, 255),
+            Color(255, 30, 45, 65),
+            Color(255, 0, 120, 215),
+            Color(255, 255, 255, 255),
             Color(255, 170, 180, 200)
         };
     }
-    curY += 45;
-    
-    // Config Section Header
-    SC_GUI::DrawStringA("Configurations", x + 20, curY, Color(255, 100, 255, 100), SC_GUI::titleFont, false);
-    curY += 40;
 
-    RenderConfigTab(x, curY, w, h - (curY - y));
-    RenderConfigTab(x, curY, w, h - (curY - y));
+    CoreStage5Panel(headerX + leftW + 18.0f, contentY, rightW, panelH, 14.0f);
+    RenderConfigTab(headerX + leftW + 18.0f, contentY - 18.0f, rightW, panelH + 18.0f);
 }
-
 // --- Glove Tab ---
 void RenderGloveTab(float x, float y, float w, float h)
 {
-    // Layout: Left column for Glove Types, Right area for Skins
-    float typeW = 160.0f;
-    float typeX = x + 10;
-    float typeY = y + 10;
-    
-    // Background for Types
-    SC_GUI::DrawFilledRoundedRect(typeX, typeY, typeW, h - 20, 8.0f, SC_GUI::currentTheme.sidebarBg);
-    
-    static int selectedGloveIdx = 0;
-    float curY = typeY + 10;
-    
-    // Render Glove Types
-    for (int i=0; i < (int)GloveTypes.size(); i++) {
-         bool active = (selectedGloveIdx == i);
-         // Mini Tab Button
-         if (SC_GUI::TabButton("glove_type_" + std::to_string(i), GloveTypes[i].name, typeX + 5, curY, typeW - 10, 40, active)) {
-             selectedGloveIdx = i;
-             // Reset skin selection offset?
-         }
-         curY += 45;
-    }
+    float pad = 24.0f;
+    float headerX = x + pad;
+    float headerY = y + 18.0f;
+    float headerW = w - pad * 2;
 
-    // Right Side: Skins
-    float skinX = x + typeW + 20;
-    float skinY = y + 10;
-    float skinW = w - typeW - 30;
-    float skinH = h - 20;
-    
-    std::string currentGloveName = GloveTypes[selectedGloveIdx].name;
-    
-    std::vector<SkinInfo_t> gloves = skindb->GetGloveSkins(currentGloveName);
-    
-    // Grid Layout
-    float cardW = 180;
-    float cardH = 220;
-    float gap = 15;
-    int cols = (int)((skinW / (cardW + gap)));
-    if (cols < 1) cols = 1;
-    
-    // Safety
-    if (gloves.empty()) {
-        SC_GUI::DrawStringA("No Skins Found", skinX + 20, skinY + 20, SC_GUI::currentTheme.text, SC_GUI::mainFont, false);
+    CoreStage5Header("Gloves", "Select glove model and finish combinations.", headerX, headerY, headerW);
+
+    if (GloveTypes.empty()) {
+        CoreStage5EmptyState("No glove models found", "Glove data did not load yet.", headerX, headerY + 96, headerW, 150);
         return;
     }
-    
-    float totalH = ((gloves.size() + cols - 1) / cols) * (cardH + gap);
-    
-    // Scroll
-    static float scrollY = 0.0f;
-    if (SC_GUI::Input.mousePos.x >= skinX && SC_GUI::Input.mousePos.x <= skinX + skinW &&
-        SC_GUI::Input.mousePos.y >= skinY && SC_GUI::Input.mousePos.y <= skinY + skinH) {
-         scrollY += SC_GUI::Input.scrollDelta * 0.5f;
-    }
-    if (scrollY > 0) scrollY = 0;
-    float maxScroll = -(totalH - skinH);
-    if (maxScroll > 0) maxScroll = 0;
-    if (scrollY < maxScroll) scrollY = maxScroll;
 
-    SC_GUI::SetClip(skinX, skinY, skinW, skinH);
-    
-    int currentPaint = skinManager->Gloves.Paint;
-    uint16_t currentDef = skinManager->Gloves.defIndex;
-    
-    for(int i=0; i<(int)gloves.size(); i++) {
-        int col = i % cols;
-        int row = i / cols;
-        
-        float drawX = skinX + col * (cardW + gap);
-        float drawY = skinY + scrollY + row * (cardH + gap);
-        
-        if (drawY + cardH < skinY || drawY > skinY + skinH) continue;
-        
-        // Selected?
-        // We need to check if current Glove Def matches AND paint matches
-        bool isSelected = (currentPaint == gloves[i].Paint && currentDef == GloveTypes[selectedGloveIdx].defIndex);
-        
-        if (SC_GUI::SkinCard("glove_" + std::to_string(i), gloves[i].name, gloves[i].image_url, gloves[i].rarity, drawX, drawY, cardW, cardH, isSelected, configManager->diskCacheEnabled)) {
-            // Apply Glove
-            skinManager->Gloves.defIndex = GloveTypes[selectedGloveIdx].defIndex;
-            skinManager->Gloves.Paint = gloves[i].Paint;
-            skinManager->Gloves.Paint = gloves[i].Paint;
-            ForceUpdate = true; // Trigger update in main loop
+    float contentY = headerY + 96.0f;
+    float typeW = 210.0f;
+    float typeX = headerX;
+    float skinX = typeX + typeW + 18.0f;
+    float skinW = headerW - typeW - 18.0f;
+    float panelH = h - (contentY - y) - 22.0f;
+
+    CoreStage5Panel(typeX, contentY, typeW, panelH, 14.0f);
+    SC_GUI::DrawStringA("Glove Model", typeX + 18, contentY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Choose base type", typeX + 18, contentY + 45, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    static int selectedGloveIdx = 0;
+    if (selectedGloveIdx < 0) selectedGloveIdx = 0;
+    if (selectedGloveIdx >= (int)GloveTypes.size()) selectedGloveIdx = 0;
+
+    static float typeScrollY = 0.0f;
+    float typeListY = contentY + 78.0f;
+    float typeListH = panelH - 94.0f;
+    float typeContentH = GloveTypes.size() * 44.0f;
+
+    if (SC_GUI::Input.mousePos.x >= typeX && SC_GUI::Input.mousePos.x <= typeX + typeW &&
+        SC_GUI::Input.mousePos.y >= typeListY && SC_GUI::Input.mousePos.y <= typeListY + typeListH) {
+        typeScrollY += SC_GUI::Input.scrollDelta * 0.5f;
+    }
+    if (typeScrollY > 0) typeScrollY = 0;
+    float typeMin = -(typeContentH - typeListH);
+    if (typeMin > 0) typeMin = 0;
+    if (typeScrollY < typeMin) typeScrollY = typeMin;
+
+    SC_GUI::SetClip(typeX, typeListY, typeW, typeListH);
+    for (int i = 0; i < (int)GloveTypes.size(); i++) {
+        float itemY = typeListY + typeScrollY + i * 44.0f;
+        if (itemY + 38 < typeListY || itemY > typeListY + typeListH) continue;
+        bool active = (selectedGloveIdx == i);
+        if (SC_GUI::TabButton("glove_type_" + std::to_string(i), GloveTypes[i].name, typeX + 12, itemY, typeW - 24, 38, active)) {
+            selectedGloveIdx = i;
         }
     }
-    
+    SC_GUI::ResetClip();
+
+    std::string currentGloveName = GloveTypes[selectedGloveIdx].name;
+    std::vector<SkinInfo_t> gloves = skindb->GetGloveSkins(currentGloveName);
+
+    CoreStage5Panel(skinX, contentY, skinW, panelH, 14.0f);
+    SC_GUI::DrawStringA(currentGloveName, skinX + 20, contentY + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Finishes: " + std::to_string((int)gloves.size()), skinX + 20, contentY + 45, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    if (gloves.empty()) {
+        SC_GUI::DrawStringA("No glove finishes found for this model.", skinX + 20, contentY + 92, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+        return;
+    }
+
+    static float scrollY = 0.0f;
+    float viewX = skinX + 18.0f;
+    float viewY = contentY + 78.0f;
+    float viewW = skinW - 36.0f;
+    float viewH = panelH - 96.0f;
+    float cardW = 170.0f;
+    float cardH = 198.0f;
+    float gap = 16.0f;
+    int cols = (int)((viewW - 4.0f) / (cardW + gap));
+    if (cols < 1) cols = 1;
+
+    float totalH = ((gloves.size() + cols - 1) / cols) * (cardH + gap);
+
+    if (SC_GUI::Input.mousePos.x >= viewX && SC_GUI::Input.mousePos.x <= viewX + viewW &&
+        SC_GUI::Input.mousePos.y >= viewY && SC_GUI::Input.mousePos.y <= viewY + viewH) {
+        scrollY += SC_GUI::Input.scrollDelta * 0.5f;
+    }
+    if (scrollY > 0) scrollY = 0;
+    float minScroll = -(totalH - viewH + gap);
+    if (minScroll > 0) minScroll = 0;
+    if (scrollY < minScroll) scrollY = minScroll;
+
+    int currentPaint = skinManager->Gloves.Paint;
+    uint16_t currentDef = skinManager->Gloves.defIndex;
+
+    SC_GUI::SetClip(viewX, viewY, viewW, viewH);
+    for (int i = 0; i < (int)gloves.size(); i++) {
+        float drawX = viewX + (i % cols) * (cardW + gap);
+        float drawY = viewY + scrollY + (i / cols) * (cardH + gap);
+        if (drawY + cardH < viewY || drawY > viewY + viewH) continue;
+
+        bool isSelected = (currentPaint == gloves[i].Paint && currentDef == GloveTypes[selectedGloveIdx].defIndex);
+        if (SC_GUI::SkinCard("glove_" + std::to_string(i), gloves[i].name, gloves[i].image_url, gloves[i].rarity, drawX, drawY, cardW, cardH, isSelected, configManager->diskCacheEnabled)) {
+            skinManager->Gloves.defIndex = GloveTypes[selectedGloveIdx].defIndex;
+            skinManager->Gloves.Paint = gloves[i].Paint;
+            ForceUpdate = true;
+        }
+    }
     SC_GUI::ResetClip();
 }
-
 static int active_tab = 0;
 bool MenuOpen = true;
 
