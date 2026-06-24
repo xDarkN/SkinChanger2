@@ -1,6 +1,6 @@
-# Building CS2 Skin Changer
+# Building Core Skin Changer
 
-This project is a C++20 application that uses several external libraries. We have configured the project to use **NuGet** to manage these dependencies automatically, making the build process much easier.
+Core Skin Changer is a C++20 Windows application that uses several external libraries. We have configured the project to use **NuGet** to manage these dependencies automatically, making the build process much easier.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ The project uses the following libraries, which are managed via `packages.config
 3.  Select the **Release** configuration and **x64** platform from the toolbar.
 4.  Build the solution (**Ctrl+Shift+B** or **Build** -> **Build Solution**).
 
-The compiled executable `ext-cs2-skin-changer.exe` will be located in the `x64/Release` directory.
+The compiled executable `CoreSkinChanger.exe` will be located in the `x64/Release` directory.
 
 ## Troubleshooting
 

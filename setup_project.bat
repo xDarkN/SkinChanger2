@@ -1,9 +1,9 @@
 @echo off
 setlocal
-title CS2 Skin Changer - Auto Setup
+title Core Skin Changer - Auto Setup
 
 echo ==========================================
-echo    CS2 Skin Changer - Environment Setup
+echo    Core Skin Changer - Environment Setup
 echo ==========================================
 echo.
 

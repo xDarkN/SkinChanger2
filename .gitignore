@@ -23,3 +23,7 @@ obj/
 # NuGet restored packages
 /src/packages/
 
+# Core Skin Changer temporary patch files
+core_skin_stage*.ps1
+_backup_core_skin_stage*/
+*.bak
