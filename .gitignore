@@ -19,3 +19,7 @@ obj/
 *.zip
 *.7z
 *.rar
+
+# NuGet restored packages
+/src/packages/
+
