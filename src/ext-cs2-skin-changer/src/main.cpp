@@ -62,7 +62,7 @@ int main()
     configManager->Setup();
     configManager->AutoLoad();
 
-    std::cout << "SkinChanger Started\n";
+    std::cout << "Core Skin Changer Started\n";
 
     while (true)
     {

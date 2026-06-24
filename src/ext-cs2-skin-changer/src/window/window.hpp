@@ -25,14 +25,14 @@ namespace overlay {
         wcex = {
             sizeof(WNDCLASSEXW), 0, DefWindowProcW, 0, 0, nullptr,
             LoadIcon(nullptr, IDI_APPLICATION), LoadCursor(nullptr, IDC_ARROW),
-            nullptr, nullptr, L"CS2_Overlay", LoadIcon(nullptr, IDI_APPLICATION)
+            nullptr, nullptr, L"CoreSkinChangerOverlay", LoadIcon(nullptr, IDI_APPLICATION)
         };
 
         RegisterClassExW(&wcex);
 
         Window = CreateWindowExW(
             WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
-            L"CS2_Overlay", L"Overlay",
+            L"CoreSkinChangerOverlay", L"Core Skin Changer",
             WS_POPUP, 0, 0, G_Width, G_Height,
             nullptr, nullptr, wcex.hInstance, nullptr
         );

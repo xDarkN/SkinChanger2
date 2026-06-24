@@ -6,6 +6,7 @@
 #include <map>
 #include <gdiplus.h>
 #include <cctype>
+#include <cstdlib>
 #include <mutex>
 #include <shared_mutex>
 #include <thread>
@@ -42,14 +43,14 @@ namespace SC_GUI {
     };
     
     inline Theme currentTheme = {
-        Color(255, 12, 12, 12),      // mainBg (Deep Dark)
-        Color(255, 20, 20, 20),      // sidebarBg (Slightly lighter)
-        Color(255, 30, 30, 30),      // contentBg (Cards/Inputs)
-        Color(255, 45, 45, 45),      // border
-        Color(255, 40, 40, 40),      // separator
-        Color(255, 100, 100, 255),   // accent (Vibrant Blue/Purple default) - actually lets go Red as per user history, but modern: #FF4444
-        Color(255, 255, 255, 255),   // text
-        Color(255, 150, 150, 150)    // textDim
+        Color(255, 8, 12, 8),        // mainBg - Core black
+        Color(255, 13, 18, 14),      // sidebarBg
+        Color(255, 18, 24, 20),      // contentBg / cards
+        Color(255, 34, 50, 38),      // border
+        Color(255, 27, 40, 31),      // separator
+        Color(255, 92, 255, 122),    // accent - Core green
+        Color(255, 230, 234, 231),   // text
+        Color(255, 160, 166, 163)    // textDim
     };
 
     // Global Input State (Same as before)
@@ -237,7 +238,7 @@ namespace SC_GUI {
 
         // Colors
         Color base = currentTheme.contentBg;
-        Color hover = Color(255, 60, 60, 60);
+        Color hover = Color(255, 22, 44, 28);
         Color active = currentTheme.accent;
 
         Color bg = selected ? active : InterpColor(base, hover, anim);
@@ -268,7 +269,22 @@ namespace SC_GUI {
         const size_t MAX_RAM_USAGE = 50 * 1024 * 1024; // 50 MB
         size_t currentRamUsage = 0;
         
-        const std::string CACHE_DIR = "C:\\Skin2Merde\\images";
+        const std::string CACHE_DIR = []() {
+            char* appData = nullptr;
+            size_t len = 0;
+
+            if (_dupenv_s(&appData, &len, "APPDATA") == 0 && appData && len > 0) {
+                std::string base(appData);
+                free(appData);
+                return base + "\\Core Skin Changer\\images";
+            }
+
+            if (appData) {
+                free(appData);
+            }
+
+            return std::string("C:\\Core Skin Changer\\images");
+        }();
 
         // Download State
         std::map<std::string, bool> downloadActive;

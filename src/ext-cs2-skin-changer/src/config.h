@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <cstdlib>
 #include <nlohmann/json.hpp>
 #include "SDK/weapon/C_EconEntity.h"
 
@@ -12,9 +13,26 @@ using json = nlohmann::json;
 class CConfigManager
 {
 private:
-    std::wstring configDir = L"C:\\Skin2Merde\\";
+    std::wstring configDir;
+
+    static std::wstring GetDefaultConfigDir()
+    {
+        wchar_t* appData = nullptr;
+        size_t len = 0;
+        _wdupenv_s(&appData, &len, L"APPDATA");
+
+        std::wstring base = (appData && len > 0) ? appData : L"C:\\";
+        if (appData)
+            free(appData);
+
+        return base + L"\\Core Skin Changer\\";
+    }
 
 public:
+    CConfigManager()
+        : configDir(GetDefaultConfigDir())
+    {
+    }
     void Setup()
     {
         if (!fs::exists(configDir))
