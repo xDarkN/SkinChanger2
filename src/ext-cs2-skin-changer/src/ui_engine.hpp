@@ -233,20 +233,23 @@ namespace SC_GUI {
         bool hovered = (Input.mousePos.x >= x && Input.mousePos.x <= x + w && Input.mousePos.y >= y && Input.mousePos.y <= y + h);
         bool clicked = hovered && Input.leftClicked;
 
-        UpdateAnimation(id, hovered ? 1.0f : 0.0f, 0.2f);
+        UpdateAnimation(id, (hovered || selected) ? 1.0f : 0.0f, 0.18f);
         float anim = animations[id].value;
 
-        // Colors
-        Color base = currentTheme.contentBg;
-        Color hover = Color(255, 22, 44, 28);
-        Color active = currentTheme.accent;
-
+        Color base = Color(255, 13, 24, 17);
+        Color hover = Color(255, 21, 48, 29);
+        Color active = Color(255, 19, 64, 32);
         Color bg = selected ? active : InterpColor(base, hover, anim);
-        
-        DrawFilledRoundedRect(x, y, w, h, 6.0f, bg);
-        // Center text
-        DrawStringA(text, x + w/2, y + h/2, Color(255, 255, 255), mainFont, centerFormat);
+        Color border = selected ? currentTheme.accent : InterpColor(currentTheme.border, Color(255, 63, 105, 70), anim);
 
+        DrawFilledRoundedRect(x, y, w, h, 9.0f, bg);
+        DrawStrokeRoundedRect(x, y, w, h, 9.0f, border, selected ? 1.6f : 1.0f);
+
+        if (selected) {
+            DrawFilledRoundedRect(x + 8, y + h - 5, w - 16, 2.0f, 1.0f, currentTheme.accent);
+        }
+
+        DrawStringA(text, x + w / 2, y + h / 2, selected ? currentTheme.accent : currentTheme.text, mainFont, centerFormat);
         return clicked;
     }
 
@@ -517,30 +520,28 @@ namespace SC_GUI {
         bool hovered = (Input.mousePos.x >= x && Input.mousePos.x <= x + w && Input.mousePos.y >= y && Input.mousePos.y <= y + h);
         bool clicked = hovered && Input.leftClicked;
 
-        UpdateAnimation(id, (hovered || active) ? 1.0f : 0.0f, 0.2f);
+        UpdateAnimation(id, (hovered || active) ? 1.0f : 0.0f, 0.20f);
         float anim = animations[id].value;
 
-        // Background (Subtle highlight)
-        if (anim > 0.01f) {
-            Color bg = Color((BYTE)(20 * anim), 255, 255, 255); // Very subtle white overlay
-            DrawFilledRoundedRect(x, y, w, h, 8.0f, bg);
+        Color bgBase = Color(255, 10, 17, 12);
+        Color bgHover = Color(255, 17, 40, 24);
+        Color bgActive = Color(255, 19, 58, 31);
+        Color bg = active ? bgActive : InterpColor(bgBase, bgHover, anim);
+        Color border = active ? currentTheme.accent : InterpColor(Color(255, 20, 31, 23), currentTheme.border, anim);
+
+        if (active || hovered) {
+            DrawFilledRoundedRect(x, y, w, h, 10.0f, bg);
+            DrawStrokeRoundedRect(x, y, w, h, 10.0f, border, active ? 1.5f : 1.0f);
         }
 
-        // Accent Indicator (Left Side Pill)
         if (active) {
-            DrawFilledRoundedRect(x, y + 8, 4, h - 16, 2.0f, currentTheme.accent);
+            DrawFilledRoundedRect(x + 8, y + 11, 4, h - 22, 2.0f, currentTheme.accent);
+            DrawFilledRoundedRect(x + w - 14, y + h / 2 - 3, 6, 6, 3.0f, currentTheme.accent);
         }
 
-        // Icon + Text
-        float contentX = x + 20;
-        // If we had icons, draw here.
-        
-        Color txtColor = InterpColor(currentTheme.textDim, currentTheme.text, active ? 1.0f : anim);
-        if (active) txtColor = currentTheme.accent; // Highlight text if active? Or just white? Let's go Accent.
-
-        // Use vCenterFormat
+        Color txtColor = active ? currentTheme.accent : InterpColor(currentTheme.textDim, currentTheme.text, anim);
         brush->SetColor(txtColor);
-        RectF layout((REAL)contentX, (REAL)y, (REAL)(w - 30), (REAL)h);
+        RectF layout((REAL)(x + 24), (REAL)y, (REAL)(w - 38), (REAL)h);
         std::wstring wtext(text.begin(), text.end());
         gfx->DrawString(wtext.c_str(), -1, largeFont, layout, vCenterFormat, brush);
 
