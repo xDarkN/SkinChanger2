@@ -667,60 +667,86 @@ void CoreStage7DrawGrid(float x, float y, float w, float h)
         SC_GUI::DrawRect(x + 12, gy, w - 24, 1, Color(12, 82, 255, 130));
     }
 }
+
+void RenderCoreStage8Chip(const std::string& text, float x, float y, float w, bool highlighted = false)
+{
+    Color bg = highlighted ? Color(255, 18, 62, 30) : Color(255, 10, 18, 14);
+    Color br = highlighted ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.border;
+
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 30, 8.0f, bg);
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 30, 8.0f, br, 1.0f);
+    SC_GUI::DrawStringA(text, x + 14, y + 8, highlighted ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.text, SC_GUI::smallFont, false);
+}
 void RenderDashboardTab(float x, float y, float w, float h)
 {
-    float pad = 30.0f;
+    float pad = 24.0f;
     float curX = x + pad;
-    float curY = y + 28.0f;
-    float contentW = w - pad * 2;
+    float curY = y + 18.0f;
 
-    CoreStage7GlowPanel(curX, curY, contentW, 176, 20.0f, Color(255, 6, 15, 10), true);
-    CoreStage7DrawGrid(curX, curY, contentW, 176);
+    // Premium top header bar
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 58, 14.0f, Color(255, 8, 14, 11));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 58, 14.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Dashboard", curX, curY + 8, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
+    SC_GUI::DrawStringA("Premium loadout customization suite", curX, curY + 34, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
 
-    SC_GUI::DrawFilledRoundedRect(curX + 24, curY + 26, 68, 68, 18.0f, Color(255, 12, 51, 26));
-    SC_GUI::DrawStrokeRoundedRect(curX + 24, curY + 26, 68, 68, 18.0f, SC_GUI::currentTheme.accent, 1.8f);
-    SC_GUI::DrawStringA("C", curX + 49, curY + 42, SC_GUI::currentTheme.accent, SC_GUI::titleFont, false);
+    RenderCoreStage8Chip("Core UI v3", x + w - 350, y + 11, 110, true);
+    RenderCoreStage8Chip("Release x64", x + w - 228, y + 11, 120, false);
+    RenderCoreStage8Chip("Ready", x + w - 96, y + 11, 72, false);
 
-    SC_GUI::DrawStringA("Core Skin Changer", curX + 114, curY + 24, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
-    SC_GUI::DrawStringA("Premium black/green loadout control center", curX + 116, curY + 70, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("A much stronger Core Keys inspired visual layer: larger shell, glow panels, cleaner cards, and premium spacing.", curX + 116, curY + 104, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    curY += 78.0f;
 
-    CoreStage7TinyPill("CORE UI v2", curX + contentW - 370, curY + 34, 112, true);
-    CoreStage7TinyPill("Release x64", curX + contentW - 246, curY + 34, 112, false);
-    CoreStage7TinyPill("Ready", curX + contentW - 122, curY + 34, 88, true);
+    // Hero banner
+    SC_GUI::DrawFilledRoundedRect(x + 6, curY, w - 12, 198, 20.0f, Color(255, 7, 15, 11));
+    SC_GUI::DrawStrokeRoundedRect(x + 6, curY, w - 12, 198, 20.0f, SC_GUI::currentTheme.border, 1.0f);
 
-    curY += 210.0f;
+    SC_GUI::DrawFilledRoundedRect(x + 34, curY + 28, 70, 70, 16.0f, Color(255, 10, 55, 24));
+    SC_GUI::DrawStrokeRoundedRect(x + 34, curY + 28, 70, 70, 16.0f, SC_GUI::currentTheme.accent, 2.0f);
+    SC_GUI::DrawStringA("C", x + 59, curY + 44, SC_GUI::currentTheme.accent, SC_GUI::titleFont, false);
 
-    int itemCount = skinManager ? (int)skinManager->Skins.size() : 0;
-    float metricW = (contentW - 42.0f) / 3.0f;
-    CoreStage7BigMetric("INVENTORY", std::to_string(itemCount) + " items", "Loaded into current session", curX, curY, metricW, 126);
-    CoreStage7BigMetric("PROFILE", "Main", "Default workspace active", curX + metricW + 21, curY, metricW, 126);
-    CoreStage7BigMetric("THEME", "Neon Core", "High contrast premium shell", curX + (metricW + 21) * 2, curY, metricW, 126);
+    SC_GUI::DrawStringA("Core Skin Changer", x + 135, curY + 34, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
+    SC_GUI::DrawStringA("Premium black/green loadout control center", x + 135, curY + 78, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("A stronger Core Keys inspired visual layer with glow panels, cleaner cards, and premium spacing.", x + 135, curY + 118, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
 
-    curY += 160.0f;
+    RenderCoreStage8Chip("CORE UI v3", x + w - 365, curY + 38, 110, true);
+    RenderCoreStage8Chip("Release x64", x + w - 242, curY + 38, 120, false);
+    RenderCoreStage8Chip("Ready", x + w - 108, curY + 38, 80, false);
 
-    SC_GUI::DrawStringA("Fast Navigation", curX, curY, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("The main pages are now styled to feel like one unified premium product.", curX, curY + 26, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+    curY += 222.0f;
+
+    // Metrics row
+    float rowW = (w - 24.0f) / 3.0f - 12.0f;
+    RenderCoreMetricCard("INVENTORY", std::to_string((int)skinManager->Skins.size()) + " items", "Loaded into current session", x + 8, curY, rowW, 132);
+    RenderCoreMetricCard("PROFILE", "Main", "Default workspace active", x + 20 + rowW, curY, rowW, 132);
+    RenderCoreMetricCard("THEME", "Neon Core", "High contrast premium shell", x + 32 + rowW * 2, curY, rowW, 132);
+
+    curY += 165.0f;
+
+    // Quick navigation
+    SC_GUI::DrawStringA("Fast Navigation", x + 12, curY, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("The main pages are now styled to feel like one unified premium product.", x + 12, curY + 30, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
     curY += 62.0f;
 
-    float actionW = (contentW - 48.0f) / 4.0f;
-    if (SC_GUI::Button("stage7_weapons", "Weapons", curX, curY, actionW, 50)) active_tab = 1;
-    if (SC_GUI::Button("stage7_knives", "Knives", curX + actionW + 16, curY, actionW, 50)) active_tab = 2;
-    if (SC_GUI::Button("stage7_gloves", "Gloves", curX + (actionW + 16) * 2, curY, actionW, 50)) active_tab = 3;
-    if (SC_GUI::Button("stage7_settings", "Settings", curX + (actionW + 16) * 3, curY, actionW, 50)) active_tab = 5;
+    float navW = (w - 60.0f) / 4.0f;
+    if (SC_GUI::Button("st8_wep", "Weapons", x + 10, curY, navW, 48)) active_tab = 1;
+    if (SC_GUI::Button("st8_knife", "Knives", x + 22 + navW, curY, navW, 48)) active_tab = 2;
+    if (SC_GUI::Button("st8_gloves", "Gloves", x + 34 + navW * 2, curY, navW, 48)) active_tab = 3;
+    if (SC_GUI::Button("st8_settings", "Settings", x + 46 + navW * 3, curY, navW, 48)) active_tab = 5;
 
-    curY += 88.0f;
+    curY += 86.0f;
 
-    float panelW = (contentW - 22.0f) / 2.0f;
-    CoreStage7GlowPanel(curX, curY, panelW, 142, 16.0f, Color(255, 7, 16, 11), false);
-    SC_GUI::DrawStringA("Design Upgrade", curX + 24, curY + 22, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("This pass is intentionally more visible than the earlier cleanup stages.", curX + 24, curY + 56, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
-    SC_GUI::DrawStringA("Bigger frame, stronger glow, richer contrast, and cleaner navigation.", curX + 24, curY + 82, SC_GUI::currentTheme.accent, SC_GUI::smallFont, false);
+    float lowerW = (w - 34.0f) / 2.0f - 8.0f;
 
-    CoreStage7GlowPanel(curX + panelW + 22, curY, panelW, 142, 16.0f, Color(255, 7, 16, 11), false);
-    SC_GUI::DrawStringA("Core Keys Feel", curX + panelW + 46, curY + 22, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("Matte black panels, neon green accents, and dashboard-style cards.", curX + panelW + 46, curY + 56, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
-    SC_GUI::DrawStringA("Next: screenshot pass + final README showcase if you like this look.", curX + panelW + 46, curY + 82, SC_GUI::currentTheme.accent, SC_GUI::smallFont, false);
+    SC_GUI::DrawFilledRoundedRect(x + 8, curY, lowerW, 148, 16.0f, Color(255, 8, 16, 12));
+    SC_GUI::DrawStrokeRoundedRect(x + 8, curY, lowerW, 148, 16.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Design Upgrade", x + 34, curY + 32, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("This pass is intentionally more visible than the earlier cleanup stages.", x + 34, curY + 68, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    SC_GUI::DrawStringA("Bigger frame, stronger glow, richer contrast, and cleaner navigation.", x + 34, curY + 104, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
+
+    SC_GUI::DrawFilledRoundedRect(x + 24 + lowerW, curY, lowerW, 148, 16.0f, Color(255, 8, 16, 12));
+    SC_GUI::DrawStrokeRoundedRect(x + 24 + lowerW, curY, lowerW, 148, 16.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Core Keys Feel", x + 50 + lowerW, curY + 32, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Matte black panels, neon green accents, and dashboard-style cards.", x + 50 + lowerW, curY + 68, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    SC_GUI::DrawStringA("Next: screenshot pass + final README showcase if you like this look.", x + 50 + lowerW, curY + 104, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
 }void RenderMenu()
 {
     float w = 1210;

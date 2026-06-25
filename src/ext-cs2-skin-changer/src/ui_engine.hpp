@@ -43,14 +43,14 @@ namespace SC_GUI {
     };
     
     inline Theme currentTheme = {
-        Color(255, 5, 8, 6),         // mainBg - deeper premium black
-        Color(255, 8, 14, 10),       // sidebarBg
-        Color(255, 13, 22, 16),      // contentBg / cards
-        Color(255, 34, 74, 43),      // border
-        Color(255, 18, 36, 24),      // separator
-        Color(255, 82, 255, 130),    // accent - Core neon green
-        Color(255, 239, 255, 244),   // text
-        Color(255, 143, 166, 151)    // textDim
+        Color(255, 5, 10, 7),         // mainBg - deeper black
+        Color(255, 9, 16, 12),        // sidebarBg
+        Color(255, 14, 22, 17),       // contentBg / cards
+        Color(255, 32, 61, 43),       // border
+        Color(255, 18, 34, 25),       // separator
+        Color(255, 92, 255, 122),     // accent - Core green
+        Color(255, 236, 242, 238),    // text
+        Color(255, 156, 176, 164)     // textDim
     };
 
     // Global Input State (Same as before)
