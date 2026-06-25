@@ -1,38 +1,129 @@
 # Building Core Skin Changer
 
-Core Skin Changer is a C++20 Windows application that uses several external libraries. We have configured the project to use **NuGet** to manage these dependencies automatically, making the build process much easier.
+This project is a C++20 Visual Studio project that uses several external libraries through NuGet.
 
 ## Prerequisites
 
-1.  **Visual Studio 2022** (Community, Professional, or Enterprise).
-2.  **Desktop development with C++** workload installed.
-3.  **MSVC v143 - VS 2022 C++ x64/x86 build tools**.
+Install:
+
+1. **Visual Studio 2022** Community, Professional, Enterprise, or Build Tools.
+2. **Desktop development with C++** workload.
+3. **MSVC v143 - VS 2022 C++ x64/x86 build tools**.
+4. Internet access for NuGet restore.
 
 ## Dependencies
 
-The project uses the following libraries, which are managed via `packages.config` and will be automatically restored by Visual Studio:
--   **nlohmann.json**: JSON parsing.
--   **openssl**: Crypto functions.
--   **curl**: HTTP requests.
--   **Microsoft.DXSDK.D3DX**: DirectX SDK.
+The project uses NuGet-managed dependencies from `packages.config`, including:
 
-## How to Build
+- `nlohmann.json`
+- `openssl-native`
+- `curl`
+- `Microsoft.DXSDK.D3DX`
 
-1.  (Optional but recommended) Run `setup_project.bat` to automatically download NuGet and restore all packages.
-2.  Open `src/ext-cs2-skin-changer.sln` in Visual Studio 2022.
-3.  Select the **Release** configuration and **x64** platform from the toolbar.
-4.  Build the solution (**Ctrl+Shift+B** or **Build** -> **Build Solution**).
+## Recommended Build Flow
 
-The compiled executable `CoreSkinChanger.exe` will be located in the `x64/Release` directory.
+1. Optional but recommended: run `setup_project.bat` to download NuGet and restore packages.
+2. Open:
 
-## Troubleshooting
+```text
+src/ext-cs2-skin-changer.sln
+```
 
--   **NuGet Restore Failed**: Ensure you have internet access and that the NuGet Package Manager is installed and enabled in Visual Studio.
--   **Linker Errors or 'openssl/evp.h' missing**: 
-    -   Go to **Project** -> **Manage NuGet Packages**.
-    -   Search for `openssl-native` or `openssl-v143-static-x86_64`.
-    -   Install it manually if the restore doesn't pick it up correctly.
-    -   Ensure **Project Properties** -> **C/C++** -> **General** -> **Additional Include Directories** contains the path to the installed package (e.g., `$(SolutionDir)packages\openssl-native.1.0.1\build\native\include`). NuGet usually handles this automatically, but if it fails, adding it manually fixes it.
+3. Select:
 
-## For Analysts
-This project uses a standard `.vcxproj` structure with NuGet references. No external build scripts or makefiles are required.
+```text
+Release | x64
+```
+
+4. Build Solution.
+
+The compiled executable should be located at:
+
+```text
+src\x64\Release\CoreSkinChanger.exe
+```
+
+## PowerShell Build
+
+```powershell
+cd C:\Projects\SkinChanger2\src
+
+$msbuildPaths = @(
+  "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+  "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+  "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+)
+
+$msbuild = $msbuildPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if (-not $msbuild) {
+  Write-Host "MSBuild not found. Install Visual Studio 2022 with Desktop development with C++." -ForegroundColor Red
+} else {
+  & $msbuild .\ext-cs2-skin-changer.sln /m /p:Configuration=Release /p:Platform=x64
+}
+```
+
+## Run
+
+```powershell
+cd C:\Projects\SkinChanger2\src\x64\Release
+.\CoreSkinChanger.exe
+```
+
+Press `INSERT` to toggle the menu.
+
+## Expected Warnings
+
+You may see warnings from old external dependencies, including missing `libcurl.pdb` debug symbols or conversion warnings.
+
+Those warnings are not fatal. The target result is:
+
+```text
+0 Error(s)
+```
+
+## Common Troubleshooting
+
+### Missing OpenSSL DLLs
+
+If Windows reports missing DLLs such as:
+
+```text
+libcrypto-1_1-x64.dll
+libssl-1_1-x64.dll
+```
+
+restore NuGet packages and copy the OpenSSL DLLs from the package folder into:
+
+```text
+src\x64\Release
+```
+
+### NuGet Restore Failed
+
+Make sure NuGet is available and internet access is working.
+
+Try:
+
+```powershell
+cd C:\Projects\SkinChanger2\src
+.\nuget.exe restore .\ext-cs2-skin-changer.sln
+```
+
+### Header or Linker Errors
+
+Confirm that NuGet packages exist under:
+
+```text
+src\packages
+```
+
+If OpenSSL headers are missing, verify that the project includes paths similar to:
+
+```text
+$(SolutionDir)packages\openssl-native.1.0.1\build\native\include
+```
+
+## Analyst Notes
+
+The project uses a standard `.vcxproj` / `.sln` structure with NuGet references. No external makefiles are required for the normal Visual Studio build path.

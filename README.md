@@ -1,49 +1,93 @@
 # Core Skin Changer
 
-Core Skin Changer is a Windows C++20 desktop application with a premium black/green Core Keys-inspired interface.
+A C++20 desktop project with a premium black/green **Core Skin Changer** interface.
 
-This branch focuses on a full visual rebrand, UI/UX cleanup, page layout polish, and cleaner project documentation.
+This branch focuses on a visual and UX remix:
+- Core black/green dashboard shell
+- Premium sidebar and dashboard layout
+- Cleaner shared UI components
+- Rebranded executable: `CoreSkinChanger.exe`
+- Safer repository docs and build instructions
 
-## Current remix status
+> This repository is being worked on in stages. The current focus is UI/UX, branding, docs, and build stability.
 
-- Rebranded visible app identity to **Core Skin Changer**.
-- Renamed the Release output executable to `CoreSkinChanger.exe`.
-- Added a Core-style black/green theme.
-- Added a dashboard-oriented shell with sidebar navigation.
-- Refreshed major UI pages for a more polished product feel.
-- Moved app config storage toward `%APPDATA%\Core Skin Changer\`.
+## Current Branch
 
-## Build requirements
+Active development branch:
 
-- Visual Studio 2022
-- Desktop development with C++ workload
-- MSVC v143 x64/x86 build tools
-- NuGet restore enabled
+```text
+core-skin-remix
+```
 
-## Build flow
+Recommended workflow:
 
-1. Optionally run `setup_project.bat` to restore NuGet packages.
-2. Open `src/ext-cs2-skin-changer.sln` in Visual Studio 2022.
-3. Select `Release` configuration and `x64` platform.
-4. Build the solution.
-5. Run `src/x64/Release/CoreSkinChanger.exe`.
+```powershell
+git checkout core-skin-remix
+git pull origin core-skin-remix
+```
 
-See [`BUILDING.md`](BUILDING.md) for dependency and troubleshooting details.
+## Build Output
 
-## Dependencies
+The Release x64 build outputs:
 
-The project uses NuGet packages configured through `packages.config`:
+```text
+src\x64\Release\CoreSkinChanger.exe
+```
 
-- nlohmann.json
-- OpenSSL
-- curl
-- Microsoft.DXSDK.D3DX
+## Quick Build
 
-## Repository notes
+Use Visual Studio 2022:
 
-Temporary patch scripts and generated backup folders are ignored by Git:
+1. Open `src/ext-cs2-skin-changer.sln`
+2. Select `Release`
+3. Select `x64`
+4. Build Solution
 
-- `core_skin_stage*.ps1`
-- `_backup_core_skin_stage*/`
+Or use PowerShell/MSBuild:
 
-Build outputs, Visual Studio user files, restored NuGet packages, and binaries should stay untracked.
+```powershell
+cd C:\Projects\SkinChanger2\src
+
+$msbuildPaths = @(
+  "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe",
+  "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+  "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+)
+
+$msbuild = $msbuildPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+& $msbuild .\ext-cs2-skin-changer.sln /m /p:Configuration=Release /p:Platform=x64
+```
+
+## Run
+
+```powershell
+cd C:\Projects\SkinChanger2\src\x64\Release
+.\CoreSkinChanger.exe
+```
+
+Press `INSERT` to toggle the menu.
+
+## Local Patch Files
+
+Local patch scripts and temporary backups are ignored by Git:
+
+```text
+core_skin_stage*.ps1
+_backup_core_skin_stage*/
+menu_broken_stage*_debug.h
+RenderWeaponTab_current.txt
+```
+
+## Notes
+
+The project may show warnings from external packages, especially missing debug symbols from older dependencies. The important build result is:
+
+```text
+0 Error(s)
+```
+
+For detailed setup instructions, see [`BUILDING.md`](BUILDING.md).
+
+For the current redesign notes, see [`docs/CORE_SKIN_REDESIGN.md`](docs/CORE_SKIN_REDESIGN.md).
+
+For release checks, see [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
