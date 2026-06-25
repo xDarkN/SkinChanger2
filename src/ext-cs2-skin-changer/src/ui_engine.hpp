@@ -53,6 +53,9 @@ namespace SC_GUI {
         Color(255, 157, 183, 168)     // textDim
     };
 
+    // Set by window.hpp after overlay window is created
+    inline HWND overlayHWND = nullptr;
+
     // Global Input State (Same as before)
     struct InputState {
         POINT mousePos;
@@ -77,7 +80,7 @@ namespace SC_GUI {
 
             prevMousePos = mousePos;
             GetCursorPos(&mousePos);
-            ScreenToClient(GetForegroundWindow(), &mousePos); // Map to client area roughly
+            ScreenToClient(overlayHWND ? overlayHWND : GetDesktopWindow(), &mousePos); // Always map to our overlay window
 
             mouseDelta.x = mousePos.x - prevMousePos.x;
             mouseDelta.y = mousePos.y - prevMousePos.y;

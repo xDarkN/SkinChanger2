@@ -1,7 +1,6 @@
+#pragma once
 #include "dwEntityListManager.h"
 #include "../../../ext/offsets.h"
-
-#pragma once
 
 uintptr_t GetHudArms()
 {
@@ -23,7 +22,7 @@ uintptr_t GetHudWeapon(const uintptr_t weapon)
         return mem.Read<uintptr_t>(viewModel + Offsets::m_pOwner);
     }
 
-    return GetHudWeapon(weapon);
+    return 0; // no matching view model found
 }
 
 //uintptr_t GetHudWeapon(const uintptr_t& weapon)

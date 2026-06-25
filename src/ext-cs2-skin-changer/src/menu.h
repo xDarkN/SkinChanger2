@@ -296,10 +296,28 @@ void RenderKnifeTab(float x, float y, float w, float h)
             selectedKnifeSkinIndex = i;
             if (i != 0) {
                 SkinInfo_t s = filteredSkins[i];
-                s.weaponType = WeaponsEnum::CtKnife;
-                skinManager->AddSkin(s);
+                // Track which knife model to load
+                skinManager->Knife = Knifes[selectedKnifeIndex];
+                // Store under BOTH default knife defindexes so GetSkin() matches
+                // the weapon the player actually holds (59=Tknife, 42=CtKnife)
                 s.weaponType = WeaponsEnum::Tknife;
                 skinManager->AddSkin(s);
+                s.weaponType = WeaponsEnum::CtKnife;
+                skinManager->AddSkin(s);
+                // ALSO store under the target knife defIndex so it matches AFTER we change it
+                s.weaponType = static_cast<WeaponsEnum>(Knifes[selectedKnifeIndex].defIndex);
+                skinManager->AddSkin(s);
+            } else {
+                // Vanilla — clear knife skin and model
+                skinManager->Knife = Knife_t();
+                SkinInfo_t vanilla;
+                vanilla.Paint = 0;
+                vanilla.weaponType = WeaponsEnum::Tknife;
+                skinManager->AddSkin(vanilla);
+                vanilla.weaponType = WeaponsEnum::CtKnife;
+                skinManager->AddSkin(vanilla);
+                vanilla.weaponType = static_cast<WeaponsEnum>(Knifes[selectedKnifeIndex].defIndex);
+                skinManager->AddSkin(vanilla);
             }
         }
     }
@@ -828,7 +846,7 @@ void RenderDashboardTab(float x, float y, float w, float h)
     SC_GUI::DrawStrokeRoundedRect(x + 30, y + h - 116, sidebarW - 60, 82, 17.0f, SC_GUI::currentTheme.border, 1.0f);
     SC_GUI::DrawStringA("SYSTEM STATUS", x + 48, y + h - 98, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
     SC_GUI::DrawStringA("Ready", x + 48, y + h - 71, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("Insert toggles menu", x + 48, y + h - 47, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+    SC_GUI::DrawStringA("Home toggles menu", x + 48, y + h - 47, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
 
     // Page title metadata
     float contentX = x + sidebarW;
@@ -876,13 +894,13 @@ void RenderDashboardTab(float x, float y, float w, float h)
 }void OnFrame()
 {
      // Toggle Logic
-    static bool prevInsert = false;
-    bool insert = (GetAsyncKeyState(VK_INSERT) & 0x8000) != 0;
-    if (insert && !prevInsert) {
+    static bool prevHome = false;
+    bool home = (GetAsyncKeyState(VK_HOME) & 0x8000) != 0;
+    if (home && !prevHome) {
         MenuOpen = !MenuOpen;
         overlay::SetInput(MenuOpen);
     }
-    prevInsert = insert;
+    prevHome = home;
 
     // Pass our RenderMenu function to the overlay loop
     overlay::Render(RenderMenu, MenuOpen); 
@@ -898,9 +916,13 @@ void MenuThread()
 
 void UpdateActiveMenuDef(const uintptr_t localPlayer)
 {
-	const uintptr_t activeWeapon = mem.Read<uintptr_t>(localPlayer + Offsets::m_pClippingWeapon);
-	const uintptr_t activeItem = activeWeapon + Offsets::m_AttributeManager + Offsets::m_Item;
-	CurrentWeaponDef = mem.Read<WeaponsEnum>(activeItem + Offsets::m_iItemDefinitionIndex);
+    // m_pClippingWeapon removed in build 14165 — read active weapon via weapon services instead
+    const uintptr_t weaponServices = mem.Read<uintptr_t>(localPlayer + Offsets::m_pWeaponServices);
+    if (!weaponServices) return;
+    const uintptr_t activeWeapon = GetEntityByHandle(mem.Read<uint32_t>(weaponServices + Offsets::m_hActiveWeapon));
+    if (!activeWeapon) return;
+    const uintptr_t activeItem = activeWeapon + Offsets::m_AttributeManager + Offsets::m_Item;
+    CurrentWeaponDef = mem.Read<WeaponsEnum>(activeItem + Offsets::m_iItemDefinitionIndex);
 }
 
 void InitMenu(const bool autoThread = false)

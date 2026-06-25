@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <curl/curl.h>
@@ -262,13 +262,13 @@ private:
             {"AUG", WeaponsEnum::Aug},
             {"AWP", WeaponsEnum::Awp},
             {"PP-Bizon", WeaponsEnum::Bizon},
-            {"PP-CZ75-Auto", WeaponsEnum::Cz65A},
+            {"CZ75-Auto", WeaponsEnum::Cz65A},
             {"Desert Eagle", WeaponsEnum::Deagle},
             {"Dual Berettas", WeaponsEnum::Elite},
             {"FAMAS", WeaponsEnum::Famas},
             {"Five-SeveN", WeaponsEnum::FiveSeven},
             {"G3SG1", WeaponsEnum::G3Sg1},
-            {"Galil AR", WeaponsEnum::Sg556},
+            {"Galil AR", WeaponsEnum::Galil},
             {"Glock-18", WeaponsEnum::Glock},
             {"P2000", WeaponsEnum::P200},
             {"M249", WeaponsEnum::M249},
@@ -276,7 +276,7 @@ private:
             {"M4A4", WeaponsEnum::M4A4},
             {"MAC-10", WeaponsEnum::Mac10},
             {"MAG-7", WeaponsEnum::Mag7},
-            {"MP5-SD", WeaponsEnum::Ump45},
+            {"MP5-SD", WeaponsEnum::Mp5SD},
             {"MP7", WeaponsEnum::Mp7},
             {"MP9", WeaponsEnum::Mp9},
             {"Negev", WeaponsEnum::Negev},
@@ -410,7 +410,7 @@ public:
     {
         std::vector<SkinInfo_t> results;
 
-        results.push_back(SkinInfo_t{ 0, false, "Vanila", WeaponsEnum::none });
+        results.push_back(SkinInfo_t{ 0, false, "Vanilla", WeaponsEnum::none });
 
         if (type == WeaponsEnum::none)
             return results;

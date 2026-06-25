@@ -1,6 +1,5 @@
-#include "../../../ext/mem.h"
-
 #pragma once
+#include "../../../ext/mem.h"
 
 const uintptr_t client = mem.GetModuleBase(L"client.dll");
 static const uintptr_t entitylist = mem.Read<uintptr_t>(client + Offsets::dwEntityList);
@@ -29,7 +28,7 @@ inline uintptr_t GetEntityByHandle(const auto& handle)
 
 uint16_t GetEntityHandle(const uintptr_t ent)
 {
-    const uintptr_t indentity = mem.Read<uintptr_t>(ent);
+    const uintptr_t identity = mem.Read<uintptr_t>(ent);
 
-	return mem.Read<uint16_t>(indentity + 0x10);
+	return mem.Read<uint16_t>(identity + 0x10);
 }

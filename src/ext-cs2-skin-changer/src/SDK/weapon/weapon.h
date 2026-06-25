@@ -63,7 +63,28 @@ enum WeaponsEnum : uint16_t
     Revolver = 64,
     Tknife = 59,
     Galil = 13,
-    Mp5SD = 23
+    Mp5SD = 23,
+    // Knife defindexes (actual item_definition_index values from CS2)
+    Bayonet = 500,
+    ClassicKnife = 503,
+    FlipKnife = 505,
+    GutKnife = 506,
+    Karambit = 507,
+    M9Bayonet = 508,
+    HuntsmanKnife = 509,
+    FalchionKnife = 512,
+    BowieKnife = 514,
+    ButterflyKnife = 515,
+    ShadowDaggers = 516,
+    ParacordKnife = 517,
+    SurvivalKnife = 518,
+    UrsusKnife = 519,
+    NavajaKnife = 520,
+    NomadKnife = 521,
+    StilettoKnife = 522,
+    TalonKnife = 523,
+    SkeletonKnife = 525,
+    KukriKnife = 526
 };
 enum class CSWeaponType : uint32_t
 {

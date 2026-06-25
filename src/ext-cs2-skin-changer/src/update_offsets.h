@@ -9,7 +9,7 @@ using json = nlohmann::json;
 
 namespace Updater {
 
-    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    static size_t UpdaterWriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
         ((std::string*)userp)->append((char*)contents, size * nmemb);
         return size * nmemb;
     }
@@ -19,7 +19,7 @@ namespace Updater {
         std::string buffer;
         if (curl) {
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, UpdaterWriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -52,7 +52,7 @@ namespace Updater {
                 Offsets::m_pInventoryServices = get("CCSPlayerController", "m_pInventoryServices");
                 Offsets::m_unMusicID = get("CCSPlayerController_InventoryServices", "m_unMusicID");
 
-                Offsets::m_pClippingWeapon = get("C_CSPlayerPawn", "m_pClippingWeapon");
+                // m_pClippingWeapon removed from C_CSPlayerPawn in build 14165 (only in commented code)
                 Offsets::m_pWeaponServices = get("C_BasePlayerPawn", "m_pWeaponServices");
                 Offsets::m_hHudModelArms = get("C_CSPlayerPawn", "m_hHudModelArms");
                 Offsets::m_hOwnerEntity = get("C_BaseEntity", "m_hOwnerEntity");

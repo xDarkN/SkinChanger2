@@ -52,6 +52,9 @@ void sd()
 
 int main()
 {
+    SetConsoleOutputCP(CP_UTF8); // Fix UTF-8 skin names (☆ etc.)
+    SetConsoleCP(CP_UTF8);
+
     mem.Write<uint16_t>(Sigs::RegenerateWeaponSkins + 0x52, Offsets::m_AttributeManager + Offsets::m_Item + Offsets::m_AttributeList + Offsets::m_Attributes);
 
     skindb->Dump();
@@ -69,9 +72,20 @@ int main()
         Sleep(5);
 
         const uintptr_t localController = GetLocalController();
-        const uintptr_t inventoryServices = mem.Read<uintptr_t>(localController + Offsets::m_pInventoryServices);
         const uintptr_t localPlayer = GetLocalPlayer();
         const uintptr_t pWeaponServices = mem.Read<uintptr_t>(localPlayer + Offsets::m_pWeaponServices);
+
+        // Skip everything if not in a live match
+        if (!localPlayer) {
+            static int notInGameLog = 0;
+            if (++notInGameLog % 2000 == 0) // ~every 10 seconds
+                std::cout << "[Info] Waiting for a live match (localPlayer = 0)...\n";
+            UpdateActiveMenuDef(localPlayer);
+            OnFrame();
+            continue;
+        }
+
+        const uintptr_t inventoryServices = mem.Read<uintptr_t>(localController + Offsets::m_pInventoryServices);
 
         mem.Write<uint16_t>(inventoryServices + Offsets::m_unMusicID, skinManager->MusicKit.id);
 
@@ -99,6 +113,34 @@ int main()
         continue;
     }
     */
+        // --- F1 Live Debug Dump ---
+        static bool prevF1 = false;
+        bool f1 = (GetAsyncKeyState(VK_F1) & 0x8000) != 0;
+        if (f1 && !prevF1) {
+            std::cout << "\n========== [DEBUG DUMP] ==========\n";
+            std::cout << std::hex << std::uppercase;
+            std::cout << "  localController : 0x" << localController << "\n";
+            std::cout << "  localPlayer     : 0x" << localPlayer << "\n";
+            std::cout << "  pWeaponServices : 0x" << pWeaponServices << "\n";
+            std::cout << "  weapons found   : " << std::dec << weapons.size() << "\n";
+            for (size_t wi = 0; wi < weapons.size(); wi++) {
+                const uintptr_t witem = weapons[wi] + Offsets::m_AttributeManager + Offsets::m_Item;
+                uint16_t defIdx = mem.Read<uint16_t>(witem + Offsets::m_iItemDefinitionIndex);
+                uint32_t itemIDHigh = mem.Read<uint32_t>(witem + Offsets::m_iItemIDHigh);
+                SkinInfo_t found = skinManager->GetSkin(static_cast<WeaponsEnum>(defIdx));
+                std::cout << "  [" << wi << "] addr=0x" << std::hex << weapons[wi]
+                          << " defIdx=" << std::dec << defIdx
+                          << " itemIDHigh=0x" << std::hex << itemIDHigh
+                          << " skinMatch=" << (found.Paint ? "YES paint=" + std::to_string(found.Paint) : "NO") << "\n";
+            }
+            std::cout << "  ForceUpdate     : " << (ForceUpdate ? "true" : "false") << "\n";
+            std::cout << "  skinManager has " << std::dec << skinManager->Skins.size() << " stored skins:\n";
+            for (auto& s : skinManager->Skins)
+                std::cout << "    weaponType=" << (int)s.weaponType << " paint=" << s.Paint << " name=" << s.name << "\n";
+            std::cout << "==================================\n\n";
+        }
+        prevF1 = f1;
+
         for (const uintptr_t& weapon : weapons)
         {
             const uintptr_t item = weapon + Offsets::m_AttributeManager + Offsets::m_Item;
@@ -112,18 +154,26 @@ int main()
             mem.Write<uint32_t>(item + Offsets::m_iItemIDHigh, -1);
 
             SkinInfo_t skin = GetSkin(item);
-            if (!skin.Paint) 
+            if (!skin.Paint)
                 continue;
 
             mem.Write<uint32_t>(weapon + Offsets::m_nFallbackPaintKit, skin.Paint);
 
-            const uint64_t mask = skin.bUsesOldModel + 1;
+            // If this is a knife and we have a target knife model selected,
+            // write the defindex to change the knife model (e.g. Tknife 59 → Bayonet 500)
+            bool isKnife = (mem.Read<uint16_t>(item + Offsets::m_iItemDefinitionIndex) == 42 ||
+                            mem.Read<uint16_t>(item + Offsets::m_iItemDefinitionIndex) == 59 ||
+                            mem.Read<uint16_t>(item + Offsets::m_iItemDefinitionIndex) >= 500);
+            if (isKnife && skinManager->Knife.defIndex != 0) {
+                mem.Write<uint16_t>(item + Offsets::m_iItemDefinitionIndex, skinManager->Knife.defIndex);
+                mem.Write<uint32_t>(weapon + Offsets::m_nSubclassID, skinManager->Knife.defIndex);
+            }
+
+            const uint64_t mask = isKnife ? 2 : (skin.bUsesOldModel + 1);
 
             const uintptr_t hudWeapon = GetHudWeapon(weapon);
             SetMeshMask(weapon, mask);
             SetMeshMask(hudWeapon, mask);
-
-            //mem.Write<ItemCustomName_t>(item + Offsets::m_szCustomNameOverride, ItemCustomName_t("this is a custom name"));
 
             econItemAttributeManager.Create(item, skin);
 
@@ -213,7 +263,15 @@ int main()
         if (ShouldUpdate || ForceUpdate)
             UpdateWeapons(weapons);
 
-        ForceUpdate = false;
+        // Keep ForceUpdate alive if skins are stored but none were applied this frame
+        // (e.g. all weapons already had itemIDHigh=-1). This forces a re-process next frame.
+        if (!ShouldUpdate && !skinManager->Skins.empty()) {
+            bool anySkinHasPaint = false;
+            for (auto& s : skinManager->Skins) if (s.Paint) { anySkinHasPaint = true; break; }
+            if (anySkinHasPaint) ForceUpdate = true;
+        } else {
+            ForceUpdate = false;
+        }
         
         if (ShouldUpdate) {
             configManager->AutoSave();

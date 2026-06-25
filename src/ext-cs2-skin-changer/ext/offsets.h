@@ -1,12 +1,11 @@
+#pragma once
 #include "a2x/client_dll.hpp"
 #include "a2x/offsets.hpp"
-
-#pragma once
 
 namespace Offsets
 {
     inline std::ptrdiff_t dwEntityList = cs2_dumper::offsets::client_dll::dwEntityList;
-    inline std::ptrdiff_t dwGameEntitySystem = cs2_dumper::offsets::client_dll::dwEntityList;
+    inline std::ptrdiff_t dwGameEntitySystem = cs2_dumper::offsets::client_dll::dwGameEntitySystem;
     inline std::ptrdiff_t dwGameEntitySystem_highestEntityIndex = cs2_dumper::offsets::client_dll::dwGameEntitySystem_highestEntityIndex;
     inline std::ptrdiff_t dwLocalPlayerController = cs2_dumper::offsets::client_dll::dwLocalPlayerController;
     inline std::ptrdiff_t dwLocalPlayerPawn = cs2_dumper::offsets::client_dll::dwLocalPlayerPawn;
@@ -16,7 +15,8 @@ namespace Offsets
     inline std::ptrdiff_t m_pInventoryServices = cs2_dumper::schemas::client_dll::CCSPlayerController::m_pInventoryServices; // CCSPlayerController_InventoryServices*
     inline std::ptrdiff_t m_unMusicID = cs2_dumper::schemas::client_dll::CCSPlayerController_InventoryServices::m_unMusicID; // uint16
 
-    inline std::ptrdiff_t m_pClippingWeapon = cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_pClippingWeapon; // C_CSWeaponBase*
+    // m_pClippingWeapon was removed from C_CSPlayerPawn in build 14165
+    inline std::ptrdiff_t m_pClippingWeapon = 0x0; // REMOVED in build 14165 - only in commented code
     inline std::ptrdiff_t m_pWeaponServices = cs2_dumper::schemas::client_dll::C_BasePlayerPawn::m_pWeaponServices; // CPlayer_WeaponServices*
     inline std::ptrdiff_t m_hHudModelArms = cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_hHudModelArms; // CHandle<C_CS2HudModelArms>
     inline std::ptrdiff_t m_hOwnerEntity = cs2_dumper::schemas::client_dll::C_BaseEntity::m_hOwnerEntity; // CHandle<C_BaseEntity>

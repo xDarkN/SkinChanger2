@@ -109,20 +109,17 @@ void SetMeshMask(const uintptr_t ent, const uint64_t mask)
 
     mem.Write<uint64_t>(dirtyAttributes + Offsets::m_DrityMeshGroupMask, mask);
 
-    bool updated = false;
-
-OverideMeshMaskNetvar:
-    for (int i = 0; i < 700; i++)
+    // Retry up to 200 times (~1 sec) in case the game overwrites it immediately
+    for (int attempt = 0; attempt < 200; attempt++)
     {
         mem.Write<uint64_t>(model + Offsets::m_MeshGroupMask, mask);
+
+        Sleep(5);
+
+        if (mem.Read<uint64_t>(model + Offsets::m_MeshGroupMask) == mask)
+            return; // confirmed written
     }
-
-    Sleep(5);
-
-    updated = mem.Read<uint64_t>(model + Offsets::m_MeshGroupMask) == mask;
-
-    if (!updated)
-        goto OverideMeshMaskNetvar;    
+    // Give up silently after max retries
 }
 
 void UpdateHud(const uintptr_t weapon, const uint32_t delay = 200)

@@ -37,6 +37,8 @@ namespace overlay {
             nullptr, nullptr, wcex.hInstance, nullptr
         );
 
+        SC_GUI::overlayHWND = Window; // Give ui_engine the correct HWND for mouse mapping
+
         // NOTE: Do NOT call SetLayeredWindowAttributes if we plan to use UpdateLayeredWindow!
         // SetLayeredWindowAttributes(Window, 0, 255, LWA_ALPHA); 
 

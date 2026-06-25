@@ -33,6 +33,7 @@ public:
         : configDir(GetDefaultConfigDir())
     {
     }
+
     void Setup()
     {
         if (!fs::exists(configDir))
@@ -44,6 +45,8 @@ public:
     std::vector<std::string> GetConfigs()
     {
         std::vector<std::string> configs;
+        if (!fs::exists(configDir)) return configs;
+
         for (const auto& entry : fs::directory_iterator(configDir))
         {
             if (entry.path().extension() == ".json")
@@ -80,21 +83,24 @@ public:
         // Settings
         j["disk_cache_enabled"] = diskCacheEnabled;
 
-        // Write
-        std::string path = std::string(configDir.begin(), configDir.end()) + name + ".json";
-        std::ofstream o(path);
-        o << std::setw(4) << j << std::endl;
+        // Unicode-safe path resolution using native C++20 std::filesystem path objects
+        fs::path targetPath = fs::path(configDir) / (name + ".json");
+        std::ofstream o(targetPath);
+        if (o.is_open())
+        {
+            o << std::setw(4) << j << std::endl;
+        }
     }
 
     void Load(const std::string& name)
     {
         if (name.empty()) return;
-        std::string path = std::string(configDir.begin(), configDir.end()) + name + ".json";
         
-        if (!fs::exists(path)) return;
+        fs::path targetPath = fs::path(configDir) / (name + ".json");
+        if (!fs::exists(targetPath)) return;
 
         try {
-            std::ifstream i(path);
+            std::ifstream i(targetPath);
             json j;
             i >> j;
 
@@ -107,7 +113,6 @@ public:
                     SkinInfo_t skin;
                     skin.weaponType = (WeaponsEnum)element["weapon"].get<int>();
                     skin.Paint = element["paint"].get<int>();
-                    
 
                     if (element.find("rarity") != element.end()) skin.rarity = element["rarity"].get<int>();
                     else skin.rarity = 1;
@@ -133,7 +138,7 @@ public:
 
             ForceUpdate = true;
         } catch (...) {
-            // Corrupt file
+            // Corrupt file handled gracefully
         }
     }
     
