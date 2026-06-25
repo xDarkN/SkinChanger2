@@ -27,3 +27,5 @@ obj/
 core_skin_stage*.ps1
 _backup_core_skin_stage*/
 *.bak
+menu_broken_stage*_debug.h
+RenderWeaponTab_current.txt
