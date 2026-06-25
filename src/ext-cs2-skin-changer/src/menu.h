@@ -73,23 +73,38 @@ void RenderWeaponTab(float x, float y, float w, float h)
         filteredIndices.push_back(i);
     }
 
-    CoreStage5Header("Weapons", "Search and select premium weapon finishes.", headerX, headerY, headerW);
-    SC_GUI::TextInput("search_wep", searchBuffer, 128, headerX + headerW - 330, headerY + 20, 300, 36, "Search skins...");
+    CoreStage5Header("Weapons", "Browse, search, and apply premium weapon finishes.", headerX, headerY, headerW);
+    SC_GUI::TextInput("search_wep", searchBuffer, 128, headerX + headerW - 360, headerY + 20, 330, 36, "Search weapon skins...");
 
     float pillY = headerY + 92.0f;
     CoreStage5Pill("Loaded: " + std::to_string((int)availableSkins.size()), headerX, pillY, 120, true);
     CoreStage5Pill("Filtered: " + std::to_string((int)filteredIndices.size()), headerX + 130, pillY, 130, false);
     CoreStage5Pill("Sorted by rarity", headerX + 270, pillY, 140, false);
+    CoreStage5Pill("Functional grid", headerX + 420, pillY, 135, false);
 
     static float scrollY = 0.0f;
-    float viewX = x + pad;
-    float viewY = headerY + 132.0f;
-    float viewW = w - pad * 2;
-    float viewH = h - (viewY - y) - 20.0f;
+    float panelX = x + pad;
+    float panelY = headerY + 144.0f;
+    float panelW = w - pad * 2;
+    float panelH = h - (panelY - y) - 22.0f;
 
-    float itemW = 154.0f;
-    float itemH = 180.0f;
-    float gap = 16.0f;
+    if (filteredIndices.empty()) {
+        CoreStage5EmptyState("No weapon skins found", "Try a different search term or clear the search box.", panelX, panelY, panelW, 150);
+        return;
+    }
+
+    CoreStage5Panel(panelX, panelY, panelW, panelH, 16.0f);
+    SC_GUI::DrawStringA("Weapon Skin Library", panelX + 20, panelY + 16, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Click any card to apply it to the selected weapon.", panelX + 20, panelY + 44, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+
+    float viewX = panelX + 12.0f;
+    float viewY = panelY + 76.0f;
+    float viewW = panelW - 24.0f;
+    float viewH = panelH - 88.0f;
+
+    float itemW = 162.0f;
+    float itemH = 188.0f;
+    float gap = 18.0f;
     int cols = (int)((viewW - 8.0f) / (itemW + gap));
     if (cols < 1) cols = 1;
 
@@ -115,11 +130,6 @@ void RenderWeaponTab(float x, float y, float w, float h)
                 break;
             }
         }
-    }
-
-    if (filteredIndices.empty()) {
-        CoreStage5EmptyState("No weapon skins found", "Try a different search term or clear the search box.", viewX, viewY, viewW, 150);
-        return;
     }
 
     SC_GUI::SetClip(viewX, viewY, viewW, viewH);
