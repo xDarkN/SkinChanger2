@@ -15,38 +15,50 @@ static char searchBuffer[128] = "";
 void UpdateSearchInput() {
 }
 
-void CoreStage5Panel(float x, float y, float w, float h, float radius = 12.0f)
+inline void CoreStage5Panel(float x, float y, float w, float h, float radius)
 {
-    SC_GUI::DrawFilledRoundedRect(x, y, w, h, radius, Color(255, 10, 18, 13));
-    SC_GUI::DrawStrokeRoundedRect(x, y, w, h, radius, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawFilledRoundedRect(x, y, w, h, radius, Color(255, 6, 13, 9));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, h, radius, Color(255, 25, 64, 39), 1.0f);
+
+    // subtle inner top highlight
+    SC_GUI::DrawFilledRoundedRect(x + 1, y + 1, w - 2, 2.0f, radius, Color(28, 86, 255, 119));
 }
 
-void CoreStage5Header(const std::string& title, const std::string& sub, float x, float y, float w)
+inline void CoreStage5Header(const std::string& title, const std::string& subtitle, float x, float y, float w)
 {
-    SC_GUI::DrawFilledRoundedRect(x, y, w, 76, 14.0f, Color(255, 9, 18, 12));
-    SC_GUI::DrawStrokeRoundedRect(x, y, w, 76, 14.0f, SC_GUI::currentTheme.border, 1.0f);
-    SC_GUI::DrawFilledRoundedRect(x + 18, y + 21, 34, 34, 9.0f, Color(255, 16, 48, 27));
-    SC_GUI::DrawStrokeRoundedRect(x + 18, y + 21, 34, 34, 9.0f, SC_GUI::currentTheme.accent, 1.0f);
-    SC_GUI::DrawStringA("+", x + 30, y + 25, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA(title, x + 66, y + 16, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA(sub, x + 66, y + 42, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 82, 14.0f, Color(255, 6, 14, 10));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 82, 14.0f, Color(255, 26, 68, 42), 1.0f);
+
+    SC_GUI::DrawFilledRoundedRect(x + 18, y + 20, 36, 36, 8.0f, Color(255, 9, 42, 21));
+    SC_GUI::DrawStrokeRoundedRect(x + 18, y + 20, 36, 36, 8.0f, SC_GUI::currentTheme.accent, 1.0f);
+    SC_GUI::DrawStringA("+", x + 31, y + 26, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
+
+    SC_GUI::DrawStringA(title, x + 72, y + 18, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(subtitle, x + 72, y + 48, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
 }
 
-void CoreStage5Pill(const std::string& text, float x, float y, float w, bool active = false)
+inline void CoreStage5Pill(const std::string& text, float x, float y, float w, bool active)
 {
-    Color bg = active ? Color(255, 18, 58, 31) : Color(255, 11, 22, 15);
-    Color border = active ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.border;
-    Color txt = active ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.textDim;
-    SC_GUI::DrawFilledRoundedRect(x, y, w, 28, 8.0f, bg);
-    SC_GUI::DrawStrokeRoundedRect(x, y, w, 28, 8.0f, border, 1.0f);
-    SC_GUI::DrawStringA(text, x + 14, y + 7, txt, SC_GUI::smallFont, false);
+    Color bg = active ? Color(255, 13, 58, 27) : Color(255, 7, 16, 11);
+    Color br = active ? SC_GUI::currentTheme.accent : Color(255, 28, 62, 40);
+    Color tx = active ? SC_GUI::currentTheme.accent : SC_GUI::currentTheme.textDim;
+
+    SC_GUI::DrawFilledRoundedRect(x, y, w, 30, 8.0f, bg);
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, 30, 8.0f, br, 1.0f);
+    SC_GUI::DrawStringA(text, x + 14, y + 8, tx, SC_GUI::smallFont, false);
 }
 
-void CoreStage5EmptyState(const std::string& title, const std::string& sub, float x, float y, float w, float h)
+inline void CoreStage5EmptyState(const std::string& title, const std::string& subtitle, float x, float y, float w, float h)
 {
-    CoreStage5Panel(x, y, w, h, 14.0f);
-    SC_GUI::DrawStringA(title, x + 26, y + 26, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA(sub, x + 26, y + 58, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    SC_GUI::DrawFilledRoundedRect(x, y, w, h, 14.0f, Color(255, 6, 13, 9));
+    SC_GUI::DrawStrokeRoundedRect(x, y, w, h, 14.0f, Color(255, 26, 68, 42), 1.0f);
+
+    SC_GUI::DrawFilledRoundedRect(x + 24, y + 24, 42, 42, 10.0f, Color(255, 9, 42, 21));
+    SC_GUI::DrawStrokeRoundedRect(x + 24, y + 24, 42, 42, 10.0f, SC_GUI::currentTheme.accent, 1.0f);
+    SC_GUI::DrawStringA("!", x + 42, y + 33, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
+
+    SC_GUI::DrawStringA(title, x + 84, y + 28, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA(subtitle, x + 84, y + 62, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
 }
 void RenderWeaponTab(float x, float y, float w, float h)
 {
