@@ -679,51 +679,48 @@ void RenderCoreStage8Chip(const std::string& text, float x, float y, float w, bo
 }
 void RenderDashboardTab(float x, float y, float w, float h)
 {
-    float pad = 24.0f;
-    float curX = x + pad;
-    float curY = y + 18.0f;
+    float curY = y + 10.0f;
 
-    // Premium top header bar
-    SC_GUI::DrawFilledRoundedRect(x, y, w, 58, 14.0f, Color(255, 8, 14, 11));
-    SC_GUI::DrawStrokeRoundedRect(x, y, w, 58, 14.0f, SC_GUI::currentTheme.border, 1.0f);
-    SC_GUI::DrawStringA("Dashboard", curX, curY + 8, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
-    SC_GUI::DrawStringA("Premium loadout customization suite", curX, curY + 34, SC_GUI::currentTheme.textDim, SC_GUI::smallFont, false);
+    // Main premium hero only. The outer shell already has the topbar.
+    SC_GUI::DrawFilledRoundedRect(x + 8, curY, w - 16, 190, 20.0f, Color(255, 7, 15, 11));
+    SC_GUI::DrawStrokeRoundedRect(x + 8, curY, w - 16, 190, 20.0f, SC_GUI::currentTheme.border, 1.0f);
 
-    RenderCoreStage8Chip("Core UI v3", x + w - 350, y + 11, 110, true);
-    RenderCoreStage8Chip("Release x64", x + w - 228, y + 11, 120, false);
-    RenderCoreStage8Chip("Ready", x + w - 96, y + 11, 72, false);
+    // Soft grid lines
+    for (int i = 0; i < 9; ++i) {
+        float gx = x + 42 + i * 100.0f;
+        SC_GUI::DrawFilledRoundedRect(gx, curY + 18, 1.0f, 154.0f, 0.0f, Color(22, 92, 255, 122));
+    }
+    for (int j = 0; j < 4; ++j) {
+        float gy = curY + 30 + j * 40.0f;
+        SC_GUI::DrawFilledRoundedRect(x + 28, gy, w - 56.0f, 1.0f, 0.0f, Color(18, 92, 255, 122));
+    }
 
-    curY += 78.0f;
+    SC_GUI::DrawFilledRoundedRect(x + 46, curY + 38, 74, 74, 16.0f, Color(255, 10, 55, 24));
+    SC_GUI::DrawStrokeRoundedRect(x + 46, curY + 38, 74, 74, 16.0f, SC_GUI::currentTheme.accent, 2.0f);
+    SC_GUI::DrawStringA("C", x + 73, curY + 56, SC_GUI::currentTheme.accent, SC_GUI::titleFont, false);
 
-    // Hero banner
-    SC_GUI::DrawFilledRoundedRect(x + 6, curY, w - 12, 198, 20.0f, Color(255, 7, 15, 11));
-    SC_GUI::DrawStrokeRoundedRect(x + 6, curY, w - 12, 198, 20.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Core Skin Changer", x + 150, curY + 38, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
+    SC_GUI::DrawStringA("Premium black/green loadout control center", x + 150, curY + 82, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("A stronger Core Keys inspired visual layer with glow panels, cleaner cards, and premium spacing.", x + 150, curY + 122, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
 
-    SC_GUI::DrawFilledRoundedRect(x + 34, curY + 28, 70, 70, 16.0f, Color(255, 10, 55, 24));
-    SC_GUI::DrawStrokeRoundedRect(x + 34, curY + 28, 70, 70, 16.0f, SC_GUI::currentTheme.accent, 2.0f);
-    SC_GUI::DrawStringA("C", x + 59, curY + 44, SC_GUI::currentTheme.accent, SC_GUI::titleFont, false);
+    RenderCoreStage8Chip("CORE UI v3", x + w - 365, curY + 42, 110, true);
+    RenderCoreStage8Chip("Release x64", x + w - 242, curY + 42, 120, false);
+    RenderCoreStage8Chip("Ready", x + w - 108, curY + 42, 80, false);
 
-    SC_GUI::DrawStringA("Core Skin Changer", x + 135, curY + 34, SC_GUI::currentTheme.text, SC_GUI::titleFont, false);
-    SC_GUI::DrawStringA("Premium black/green loadout control center", x + 135, curY + 78, SC_GUI::currentTheme.accent, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("A stronger Core Keys inspired visual layer with glow panels, cleaner cards, and premium spacing.", x + 135, curY + 118, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
-
-    RenderCoreStage8Chip("CORE UI v3", x + w - 365, curY + 38, 110, true);
-    RenderCoreStage8Chip("Release x64", x + w - 242, curY + 38, 120, false);
-    RenderCoreStage8Chip("Ready", x + w - 108, curY + 38, 80, false);
-
-    curY += 222.0f;
+    curY += 220.0f;
 
     // Metrics row
-    float rowW = (w - 24.0f) / 3.0f - 12.0f;
+    float rowW = (w - 56.0f) / 3.0f;
     RenderCoreMetricCard("INVENTORY", std::to_string((int)skinManager->Skins.size()) + " items", "Loaded into current session", x + 8, curY, rowW, 132);
-    RenderCoreMetricCard("PROFILE", "Main", "Default workspace active", x + 20 + rowW, curY, rowW, 132);
-    RenderCoreMetricCard("THEME", "Neon Core", "High contrast premium shell", x + 32 + rowW * 2, curY, rowW, 132);
+    RenderCoreMetricCard("PROFILE", "Main", "Default workspace active", x + 28 + rowW, curY, rowW, 132);
+    RenderCoreMetricCard("THEME", "Neon Core", "High contrast premium shell", x + 48 + rowW * 2, curY, rowW, 132);
 
-    curY += 165.0f;
+    curY += 168.0f;
 
     // Quick navigation
-    SC_GUI::DrawStringA("Fast Navigation", x + 12, curY, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("The main pages are now styled to feel like one unified premium product.", x + 12, curY + 30, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    SC_GUI::DrawStringA("Fast Navigation", x + 14, curY, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Jump between the main customization pages.", x + 14, curY + 30, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+
     curY += 62.0f;
 
     float navW = (w - 60.0f) / 4.0f;
@@ -736,17 +733,17 @@ void RenderDashboardTab(float x, float y, float w, float h)
 
     float lowerW = (w - 34.0f) / 2.0f - 8.0f;
 
-    SC_GUI::DrawFilledRoundedRect(x + 8, curY, lowerW, 148, 16.0f, Color(255, 8, 16, 12));
-    SC_GUI::DrawStrokeRoundedRect(x + 8, curY, lowerW, 148, 16.0f, SC_GUI::currentTheme.border, 1.0f);
-    SC_GUI::DrawStringA("Design Upgrade", x + 34, curY + 32, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
-    SC_GUI::DrawStringA("This pass is intentionally more visible than the earlier cleanup stages.", x + 34, curY + 68, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
-    SC_GUI::DrawStringA("Bigger frame, stronger glow, richer contrast, and cleaner navigation.", x + 34, curY + 104, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
+    SC_GUI::DrawFilledRoundedRect(x + 8, curY, lowerW, 138, 16.0f, Color(255, 8, 16, 12));
+    SC_GUI::DrawStrokeRoundedRect(x + 8, curY, lowerW, 138, 16.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Design Upgrade", x + 34, curY + 30, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawStringA("Bigger frame, stronger glow, richer contrast, and cleaner navigation.", x + 34, curY + 68, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
+    SC_GUI::DrawStringA("This is now much closer to a premium Core Keys dashboard.", x + 34, curY + 100, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
 
-    SC_GUI::DrawFilledRoundedRect(x + 24 + lowerW, curY, lowerW, 148, 16.0f, Color(255, 8, 16, 12));
-    SC_GUI::DrawStrokeRoundedRect(x + 24 + lowerW, curY, lowerW, 148, 16.0f, SC_GUI::currentTheme.border, 1.0f);
-    SC_GUI::DrawStringA("Core Keys Feel", x + 50 + lowerW, curY + 32, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
+    SC_GUI::DrawFilledRoundedRect(x + 24 + lowerW, curY, lowerW, 138, 16.0f, Color(255, 8, 16, 12));
+    SC_GUI::DrawStrokeRoundedRect(x + 24 + lowerW, curY, lowerW, 138, 16.0f, SC_GUI::currentTheme.border, 1.0f);
+    SC_GUI::DrawStringA("Core Keys Feel", x + 50 + lowerW, curY + 30, SC_GUI::currentTheme.text, SC_GUI::largeFont, false);
     SC_GUI::DrawStringA("Matte black panels, neon green accents, and dashboard-style cards.", x + 50 + lowerW, curY + 68, SC_GUI::currentTheme.textDim, SC_GUI::mainFont, false);
-    SC_GUI::DrawStringA("Next: screenshot pass + final README showcase if you like this look.", x + 50 + lowerW, curY + 104, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
+    SC_GUI::DrawStringA("Next: polish weapons, knives, gloves, and config screens.", x + 50 + lowerW, curY + 100, SC_GUI::currentTheme.accent, SC_GUI::mainFont, false);
 }void RenderMenu()
 {
     float w = 1210;
